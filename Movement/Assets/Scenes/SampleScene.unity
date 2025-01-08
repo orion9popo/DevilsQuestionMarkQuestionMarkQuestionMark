@@ -166,6 +166,8 @@ MonoBehaviour:
   hitboxes:
   - {fileID: 7142478100531296170, guid: 6f4d05813c622a2418cc24f92a94e0b7, type: 3}
   - {fileID: 5790777186399030162, guid: b6cd54afb2ac7894bba4fa8b09e2529c, type: 3}
+  - {fileID: 8972844459316494553, guid: c49c63e6d98e448ce99e99cc8244b401, type: 3}
+  - {fileID: 4370956664317307296, guid: 68cc770bf948c4a6c993114f62bc53d1, type: 3}
 --- !u!143 &376113405
 CharacterController:
   m_ObjectHideFlags: 0

@@ -29,7 +29,7 @@ public class PlayerController : MonoBehaviour
     private int swordProgression = 0;
     private Animator animator;
     private states state = states.idle;
-    private float timeSinceLastSwing= 0;
+    private float timeSinceLastSwing = 0;
     enum states
     {
         idle,
@@ -47,6 +47,7 @@ public class PlayerController : MonoBehaviour
     // Movement
     void Update()
     {
+        Debug.Log(state);
         input = inputMove.ReadValue<Vector2>();
         timeSinceLastSwing += Time.deltaTime;
         switch (state)
@@ -65,7 +66,7 @@ public class PlayerController : MonoBehaviour
                 break;
 
             case states.running:
-                
+
                 float targetAngle = Mathf.Atan2(move.x, move.z) * Mathf.Rad2Deg;
                 float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
                 move = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
@@ -76,11 +77,11 @@ public class PlayerController : MonoBehaviour
                     state = states.idle;
                     return;
                 }
-                
+
                 transform.rotation = Quaternion.Euler(0f, angle, 0f);
                 move = (cam.transform.forward * input.y - Vector3.Cross(cam.transform.forward, cam.transform.up) * input.x).normalized;
                 move *= speed;
-                
+
                 break;
 
         }
@@ -88,7 +89,7 @@ public class PlayerController : MonoBehaviour
         {
             cam.transform.LookAt(lockTarget);
             transform.LookAt(new Vector3(lockTarget.position.x, transform.position.y, lockTarget.position.z));
-            cam.transform.position = transform.position + 7 * Vector3.Cross(transform.forward, transform.up) + Vector3.up * 2 ;
+            cam.transform.position = Vector3.Lerp(transform.position + 7 * Vector3.Cross(transform.forward, transform.up) + Vector3.up * 2, cam.transform.position, 0.1f);
         }
         else
         {
@@ -105,12 +106,6 @@ public class PlayerController : MonoBehaviour
         move.y = verticalVelocity;
         characterController.Move(move * Time.deltaTime);
     }
-    public void damage()
-    {
-
-    }
-
-
 
     void Awake()
     {
@@ -153,87 +148,118 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-    private void Jump(InputAction.CallbackContext context){
-        Debug.Log("jump");
+    private void Jump(InputAction.CallbackContext context)
+    {
         if (characterController.isGrounded)
-            {
-                verticalVelocity = Mathf.Sqrt(gravity * -3 * jumpHeight);
-            }
+        {
+            verticalVelocity = Mathf.Sqrt(gravity * -3 * jumpHeight);
+        }
     }
 
     private void M2(InputAction.CallbackContext context)
     {
-        if(!characterController.isGrounded) return;
+        if (state == states.attacking) return;
         Vector3 targetdir = (lockTarget.position - transform.position).normalized;
-        if(lockedIn && Vector3.Dot(new Vector3(move.x, 0 , move.z).normalized, targetdir) < -0.766f){
+        state = states.attacking;
+        if (!characterController.isGrounded)
+        {
+            if (lockedIn && Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, targetdir) > 0.766f)
+            {
+                StartCoroutine(M1coroutine(0.5f));
+                launchAttack(hitboxes[2], transform.position + transform.forward * 2 + Vector3.down * 3);
+                verticalVelocity = -5;
+            }
+            state = states.idle;
+            return;
+        }
+        if (lockedIn && Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, targetdir) < -0.766f)
+        {
             StartCoroutine(M2BackCoroutine(transform.position + transform.forward * 4));
         }
+        state = states.idle;
 
     }
 
     private void M1(InputAction.CallbackContext context)
     {
-        if(!characterController.isGrounded)return;
-        if(state == states.attacking) return;
-        
-        state = states.attacking;
+        if (state == states.attacking) return;
         Vector3 targetdir = (lockTarget.position - transform.position).normalized;
-        if(lockedIn && Vector3.Dot(new Vector3(move.x, 0 , move.z).normalized, targetdir)< -0.766f){
+        state = states.attacking;
+        if (!characterController.isGrounded)
+        {
+            launchAttack(hitboxes[0], transform.position + transform.forward * 2);
+            StartCoroutine(M1coroutine(0.33f));
+            verticalVelocity = 2;
+            return;
+        }
+        if (lockedIn && Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, targetdir) < -0.766f)
+        {
             move = Vector3.zero;
             verticalVelocity = 8;
+            launchAttack(hitboxes[2], transform.position + transform.forward * 2 + Vector3.up * 1);
             StartCoroutine(M1coroutine(0.33f));
             return;
         }
-        if(lockedIn && Vector3.Dot(new Vector3(move.x, 0 , move.z).normalized, targetdir)> 0.766f){
-            move =  15 * targetdir;
+        if (lockedIn && Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, targetdir) > 0.766f)
+        {
+            move = 15 * targetdir;
+            launchAttack(hitboxes[3], transform.position + transform.forward * 5);
             StartCoroutine(M1coroutine(0.5f));
             return;
         }
-        move = transform.forward*3;
-        if(timeSinceLastSwing > 0.5){
-            timeSinceLastSwing = 0;
+        move = transform.forward * 3;
+        if (timeSinceLastSwing > 0.5)
+        {
             swordProgression = 0;
         }
+        timeSinceLastSwing = 0;
         launchAttack(hitboxes[0], transform.position + transform.forward * 2);
-        switch(swordProgression){
+        switch (swordProgression)
+        {
             case 0:
-            break;
+                break;
             case 1:
-            break;
+                break;
             case 2:
-            break;
+                break;
         }
         StartCoroutine(M1coroutine(0.33f));
     }
-    private void launchAttack(Collider other, Vector3 pos){
+    private void launchAttack(Collider other, Vector3 pos)
+    {
         Collider[] cols = Physics.OverlapBox(pos, other.bounds.extents, transform.rotation, 1 << 6);
         GameObject visual = Instantiate(other.transform.gameObject, pos, transform.rotation);
         StartCoroutine(DestoryHitbox(visual));
         foreach (Collider col in cols)
         {
-            if(col.tag == tag)
+            if (col.tag == tag)
                 continue;
 
             HurtBox hurtBox = col.transform.GetComponent<HurtBox>();
-            if(hurtBox != null){
+            if (hurtBox != null)
+            {
                 Debug.Log(col.name + " hit");
-                if(hurtBox.TakeDamage(10) && col.transform == lockTarget) {lockedIn = false; lockTarget = transform;}
+                if (hurtBox.TakeDamage(10) && col.transform == lockTarget) { lockedIn = false; lockTarget = transform; }
             }
         }
     }
 
-    private IEnumerator M2BackCoroutine(Vector3 pos){
+    private IEnumerator M2BackCoroutine(Vector3 pos)
+    {
         for (int i = 0; i < 5; i++)
         {
             yield return new WaitForSeconds(0.1f);
             launchAttack(hitboxes[1], pos);
         }
+        state = states.idle;
     }
-    private IEnumerator DestoryHitbox(GameObject hitbox){
+    private IEnumerator DestoryHitbox(GameObject hitbox)
+    {
         yield return new WaitForSeconds(0.2f);
         Destroy(hitbox);
     }
-    private IEnumerator M1coroutine(float time){
+    private IEnumerator M1coroutine(float time)
+    {
         yield return new WaitForSeconds(time);
         state = states.idle;
         move = Vector3.zero;
