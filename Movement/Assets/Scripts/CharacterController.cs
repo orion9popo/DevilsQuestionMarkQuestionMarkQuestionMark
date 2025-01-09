@@ -1,13 +1,24 @@
+// TODO
+/* 
+
+- implent animations
+- finish rest of moves
+- add the maze
+-fix those fuckng hitboxes
+
+*/
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.XR.WSA;
 using Debug = UnityEngine.Debug;
 
 public class PlayerController : MonoBehaviour
 {
-    private const bool V = false;
     public float gravity = -90.81f;
     public float speed = 6.0f;
     public float turnSmoothTime = 0.1f;
@@ -35,6 +46,7 @@ public class PlayerController : MonoBehaviour
     private float timeSinceLastSwing = 0;
     private float highTime = 0;
     private bool isItHighTime = false;
+    private bool m_Started;
     enum states
     {
         idle,
@@ -110,7 +122,7 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(M1coroutine(0.5f));
         move = Vector3.zero;
         launchAttack(hitboxes[2], transform.position + transform.forward * 2 + Vector3.down * 3);
-        verticalVelocity = -5;
+        verticalVelocity = -20;
     }
     private void Saw()
     {
@@ -118,6 +130,7 @@ public class PlayerController : MonoBehaviour
     }
     void Start()
     {
+        m_Started = true;
         characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         lockTarget = transform;
@@ -244,19 +257,33 @@ public class PlayerController : MonoBehaviour
         if (lockedIn)
         {
             lockTarget = transform;
-            lockedIn = V;
+            lockedIn = false;
             return;
         }
+        
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        List<GameObject> markedEnemies = new List<GameObject>();
+        float dist = Mathf.Infinity;
+        Transform closetEnemy = transform;
+
         for (int i = 0; i < enemies.Length; i++)
         {
             RaycastHit hit;
             if (Physics.Raycast(transform.position, enemies[i].transform.position - transform.position, out hit, 20f) && hit.transform.tag == "Enemy" && hit.distance > (lockTarget.position - transform.position).magnitude)
             {
-                lockTarget = enemies[i].transform;
+                markedEnemies.Add(enemies[i]);
                 lockedIn = true;
             }
         }
+        if(markedEnemies.Count == 0) return;
+        for (int i = 0; i < markedEnemies.Count; i++)
+        {
+            if(dist > (markedEnemies[i].transform.position - transform.position).magnitude)
+            {dist = (markedEnemies[i].transform.position - transform.position).magnitude;
+            closetEnemy = markedEnemies[i].transform;}
+        }
+        lockTarget = closetEnemy;
+        Debug.Log(closetEnemy.name);
     }
     private void Jump(InputAction.CallbackContext context)
     {
@@ -267,12 +294,23 @@ public class PlayerController : MonoBehaviour
     }
 
     // helper functions
+    Collider draw;
+    Vector3 drawpos;
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.matrix = transform.localToWorldMatrix;
+        //Check that it is being run in Play Mode, so it doesn't try to draw this in Editor mode
+        if (m_Started)
+            //Draw a cube where the OverlapBox is (positioned where your GameObject is as well as a size)
+            Gizmos.DrawWireCube(Vector3.zero, Vector3.one * 2);
+    }
 
     private void launchAttack(Collider other, Vector3 pos)
     {
-        Collider[] cols = Physics.OverlapBox(pos, other.bounds.extents, transform.rotation, 1 << 6);
-        GameObject visual = Instantiate(other.transform.gameObject, pos, transform.rotation);
-        StartCoroutine(DestoryHitbox(visual));
+        Collider[] cols = Physics.OverlapBox(transform.position, Vector3.one, transform.rotation);
+        draw = other;
+        drawpos = pos;
         foreach (Collider col in cols)
         {
             if (col.tag == tag)
@@ -286,6 +324,8 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
+    
 
     private IEnumerator RollingActionSupplement(Vector3 pos)
     {
