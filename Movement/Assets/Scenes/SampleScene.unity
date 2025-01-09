@@ -156,13 +156,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravity: -9.81
-  speed: 10
+  gravity: -40
+  speed: 5
   turnSmoothTime: 0.1
   jumpHeight: 2
   sensitivity: -1
   cam: {fileID: 963194227}
-  cap: 10
   hitboxes:
   - {fileID: 7142478100531296170, guid: 6f4d05813c622a2418cc24f92a94e0b7, type: 3}
   - {fileID: 5790777186399030162, guid: b6cd54afb2ac7894bba4fa8b09e2529c, type: 3}
@@ -600,7 +599,7 @@ GameObject:
   - component: {fileID: 1769971983}
   - component: {fileID: 1769971982}
   - component: {fileID: 1769971986}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (1)
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -719,7 +718,7 @@ GameObject:
   - component: {fileID: 1973538674}
   - component: {fileID: 1973538673}
   - component: {fileID: 1973538677}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (2)
   m_TagString: Enemy
   m_Icon: {fileID: 0}
