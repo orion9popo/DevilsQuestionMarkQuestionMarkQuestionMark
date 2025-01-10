@@ -36,7 +36,7 @@ public class PlayerController : MonoBehaviour
     private Vector2 input = new Vector2();
     private Vector3 move = new Vector3();
     private Vector3 targetDir = new Vector3();
-    private InputAction inputMove, attack1, attack2, lockOn, jump;
+    private InputAction inputMove;
     private bool lockedIn;
     private Transform lockTarget;
     private int swordProgression = 0;
@@ -46,7 +46,7 @@ public class PlayerController : MonoBehaviour
     private float timeSinceLastSwing = 0;
     private float highTime = 0;
     private bool isItHighTime = false;
-    private bool m_Started;
+
     enum states
     {
         idle,
@@ -130,7 +130,6 @@ public class PlayerController : MonoBehaviour
     }
     void Start()
     {
-        m_Started = true;
         characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         lockTarget = transform;
@@ -294,23 +293,12 @@ public class PlayerController : MonoBehaviour
     }
 
     // helper functions
-    Collider draw;
-    Vector3 drawpos;
-    void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.matrix = transform.localToWorldMatrix;
-        //Check that it is being run in Play Mode, so it doesn't try to draw this in Editor mode
-        if (m_Started)
-            //Draw a cube where the OverlapBox is (positioned where your GameObject is as well as a size)
-            Gizmos.DrawWireCube(Vector3.zero, Vector3.one * 2);
-    }
 
     private void launchAttack(Collider other, Vector3 pos)
     {
-        Collider[] cols = Physics.OverlapBox(transform.position, Vector3.one, transform.rotation);
-        draw = other;
-        drawpos = pos;
+        Collider[] cols = Physics.OverlapBox(pos, other.bounds.extents, transform.rotation);
+        GameObject visual = Instantiate(other.transform.gameObject, pos, transform.rotation);
+        StartCoroutine(DestoryHitbox(visual));
         foreach (Collider col in cols)
         {
             if (col.tag == tag)
