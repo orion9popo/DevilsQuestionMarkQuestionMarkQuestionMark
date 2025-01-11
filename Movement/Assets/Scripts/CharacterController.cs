@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 using UnityEngine.XR.WSA;
 using Debug = UnityEngine.Debug;
 
@@ -82,15 +83,6 @@ public class PlayerController : MonoBehaviour
         }
         timeSinceLastSwing = 0;
         launchAttack(hitboxes[0], transform.position + transform.forward * 2);
-        switch (swordProgression)
-        {
-            case 0:
-                break;
-            case 1:
-                break;
-            case 2:
-                break;
-        }
         StartCoroutine(M1coroutine(0.33f));
     }
     private void AirAttack()
@@ -159,6 +151,10 @@ public class PlayerController : MonoBehaviour
     {
         input = inputMove.ReadValue<Vector2>();
         timeSinceLastSwing += Time.deltaTime;
+        float dirValue = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, targetDir);
+        if(dirValue > 0.707f) dirState = attackStates.forward;
+        else if(dirValue < -0.707f) dirState = attackStates.back;
+        else dirState = attackStates.still;
         if(isItHighTime && playerInput.Player.Attack1.IsPressed()) highTime += Time.deltaTime;
         targetDir = (lockTarget.position - transform.position).normalized;
         switch (state)
@@ -168,6 +164,7 @@ public class PlayerController : MonoBehaviour
                 {
                     state = states.running;
                     dirState = attackStates.still;
+                    StartCoroutine(flicker("Run"));
                     return;
                 }
                 break;
@@ -186,12 +183,14 @@ public class PlayerController : MonoBehaviour
                 {
                     move = new Vector3(0, verticalVelocity, 0);
                     state = states.idle;
+                    StartCoroutine(flicker("Idle"));
                     return;
                 }
 
                 transform.rotation = Quaternion.Euler(0f, angle, 0f);
                 move = (cam.transform.forward * input.y - Vector3.Cross(cam.transform.forward, cam.transform.up) * input.x).normalized;
-                move *= speed;
+                if(lockedIn && dirState == attackStates.back) move *= speed * 0.5f;
+                else move *= speed;
 
                 break;
 
@@ -243,14 +242,17 @@ public class PlayerController : MonoBehaviour
     private void checkAttack(InputAction.CallbackContext context){
         if(state == states.attacking) return;
         if(context.action.name == "Attack2" && !lockedIn)return;
-        float dirValue = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, targetDir);
-        if(dirValue > 0.707f) dirState = attackStates.forward;
-        else if(dirValue < -0.707f) dirState = attackStates.back;
-        else dirState = attackStates.still;
-        Debug.Log(dirState + " | " + context.action.name + " | " + characterController.isGrounded + " | " + dirValue + " | " + attackDictionary[new Tuple<attackStates, String, bool>(dirState, context.action.name, characterController.isGrounded)].Method);
         state = states.attacking;
+        StartCoroutine(flicker(context.action.name));
         attackDictionary[new Tuple<attackStates, String, bool>(dirState, context.action.name, characterController.isGrounded)]?.DynamicInvoke();
     }
+
+    private IEnumerator flicker(string trigger){
+        animator.SetTrigger(trigger);
+        yield return new WaitForEndOfFrame();
+        animator.ResetTrigger(trigger);
+    }
+
     private void Lock(InputAction.CallbackContext context)
     {
         if (lockedIn)
