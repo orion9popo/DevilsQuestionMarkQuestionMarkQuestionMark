@@ -3,8 +3,9 @@
 
 - implent animations
 - finish rest of moves
-- add the maze
--fix those fuckng hitboxes
+- finsh the FUCKING maze
+- finish enemy
+- HELP!!!
 
 */
 
@@ -12,6 +13,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -38,7 +40,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 move = new Vector3();
     private Vector3 targetDir = new Vector3();
     private InputAction inputMove;
-    private bool lockedIn;
+    private bool lockedIn, isItHighTime = false, isStinger = false, isAirborn;
     private Transform lockTarget;
     private int swordProgression = 0;
     private Animator animator;
@@ -46,7 +48,8 @@ public class PlayerController : MonoBehaviour
     private attackStates dirState = attackStates.still;
     private float timeSinceLastSwing = 0;
     private float highTime = 0;
-    private bool isItHighTime = false;
+    private float dirValueY = 0, dirValueX = 0, oldDirM = 0, WishVertical = 0;
+    private Vector2 oldDir = Vector2.zero;
 
     enum states
     {
@@ -75,39 +78,48 @@ public class PlayerController : MonoBehaviour
     // Attacks
     private void BasicAttack()
     {
-        if((lockTarget.position - transform.position).magnitude > 2)
-        move = transform.forward * 3;
-        if (timeSinceLastSwing > 0.5)
-        {
-            swordProgression = 0;
-        }
+        if ((lockTarget.position - transform.position).magnitude > 2)
+            move = transform.forward * 3;
+        if (timeSinceLastSwing > 1) swordProgression = 0;
         timeSinceLastSwing = 0;
         launchAttack(hitboxes[0], transform.position + transform.forward * 2);
         StartCoroutine(M1coroutine(0.33f));
+        animator.SetInteger("SwordProgression", swordProgression);
+        Debug.Log(swordProgression);
+        if (swordProgression < 2) swordProgression += 1;
+        else swordProgression = 0;
     }
     private void AirAttack()
     {
         launchAttack(hitboxes[0], transform.position + transform.forward * 2);
         StartCoroutine(M1coroutine(0.33f));
-        move /= 2;
+        move *= 0.5f;
         verticalVelocity += 8;
+        if (timeSinceLastSwing > 1) swordProgression = 0;
+        timeSinceLastSwing = 0;
+        animator.SetInteger("SwordProgression", swordProgression);
+        if (swordProgression < 2) swordProgression += 1;
+        else swordProgression = 0;
     }
     private void Stinger()
     {
         move = 15 * targetDir;
         launchAttack(hitboxes[3], transform.position + transform.forward * 5);
         StartCoroutine(M1coroutine(0.5f));
+        StartCoroutine(StingerSupplement());
     }
     private void RisingStrike()
     {
         move = Vector3.zero;
+        swordProgression = 0;
+
         launchAttack(hitboxes[2], transform.position + transform.forward * 2 + Vector3.up * 1);
         StartCoroutine(RisingStrikeSupplement());
         StartCoroutine(M1coroutine(0.33f));
     }
     private void RollingAction()
     {
-        StartCoroutine(RollingActionSupplement(transform.position + transform.forward*4));
+        StartCoroutine(RollingActionSupplement(transform.position + transform.forward * 4));
     }
     private void HelmBringer()
     {
@@ -145,26 +157,28 @@ public class PlayerController : MonoBehaviour
         attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.still, "Attack2", false), HBD);
         attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack2", false), HBD);
     }
-    
+
     // Movement
     void Update()
     {
         input = inputMove.ReadValue<Vector2>();
         timeSinceLastSwing += Time.deltaTime;
-        float dirValue = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, targetDir);
-        if(dirValue > 0.707f) dirState = attackStates.forward;
-        else if(dirValue < -0.707f) dirState = attackStates.back;
-        else dirState = attackStates.still;
-        if(isItHighTime && playerInput.Player.Attack1.IsPressed()) highTime += Time.deltaTime;
+        if (isItHighTime && playerInput.Player.Attack1.IsPressed()) highTime += Time.deltaTime;
+        animator.SetBool("Grounded", characterController.isGrounded);
         targetDir = (lockTarget.position - transform.position).normalized;
+        if(characterController.isGrounded && isAirborn){
+            isAirborn = false;
+            StartCoroutine(flicker("Land"));
+        }
         switch (state)
         {
             case states.idle:
+                WishVertical = 0;
+                animator.SetFloat("WishVertical", WishVertical);
                 if (input.magnitude > 0.1)
                 {
                     state = states.running;
                     dirState = attackStates.still;
-                    StartCoroutine(flicker("Run"));
                     return;
                 }
                 break;
@@ -183,13 +197,13 @@ public class PlayerController : MonoBehaviour
                 {
                     move = new Vector3(0, verticalVelocity, 0);
                     state = states.idle;
-                    StartCoroutine(flicker("Idle"));
                     return;
                 }
 
                 transform.rotation = Quaternion.Euler(0f, angle, 0f);
                 move = (cam.transform.forward * input.y - Vector3.Cross(cam.transform.forward, cam.transform.up) * input.x).normalized;
-                if(lockedIn && dirState == attackStates.back) move *= speed * 0.5f;
+                WishVertical = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, targetDir);
+                if (lockedIn && dirState == attackStates.back) move *= speed * 0.5f;
                 else move *= speed;
 
                 break;
@@ -198,8 +212,19 @@ public class PlayerController : MonoBehaviour
         if (lockedIn)
         {
             cam.transform.LookAt(lockTarget);
-            transform.LookAt(new Vector3(lockTarget.position.x, transform.position.y, lockTarget.position.z));
+            if (isStinger == false)
+                transform.LookAt(new Vector3(lockTarget.position.x, transform.position.y, lockTarget.position.z));
             cam.transform.position += (transform.position + (10 - (lockTarget.position - transform.position).magnitude * 0.3f) * Vector3.Cross(transform.forward, transform.up) + Vector3.up * 2 - cam.transform.position) * 0.01f;
+            dirValueY = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, targetDir);
+            dirValueX = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, Vector3.Cross(targetDir, transform.up));
+            oldDir.y += (dirValueY - oldDir.y) * 0.1f;
+            oldDir.x += (dirValueX - oldDir.x) * 0.1f;
+            animator.SetFloat("Vertical", oldDir.y);
+            animator.SetFloat("Horizontal", oldDir.x);
+            animator.SetFloat("WishVertical", WishVertical);
+            if (WishVertical > 0.707f) dirState = attackStates.forward;
+            else if (WishVertical < -0.707f) dirState = attackStates.back;
+            else dirState = attackStates.still;
         }
         else
         {
@@ -211,9 +236,16 @@ public class PlayerController : MonoBehaviour
                 cam.transform.eulerAngles = cam.transform.eulerAngles - rotate * 4;
             }
             cam.transform.position = transform.position - 10 * cam.transform.forward + Vector3.up * 2;
+            oldDirM += (input.magnitude - oldDirM) * 0.1f;
+            animator.SetFloat("Horizontal", 0);
+            animator.SetFloat("Vertical", oldDirM);
+            animator.SetFloat("WishVertical", 0);
         }
         verticalVelocity += gravity * Time.deltaTime;
         move.y = verticalVelocity;
+        if(verticalVelocity < -1 && !characterController.isGrounded) animator.SetBool("Fall", true);
+        else animator.SetBool("Fall", false);
+
         characterController.Move(move * Time.deltaTime);
     }
 
@@ -239,18 +271,13 @@ public class PlayerController : MonoBehaviour
         playerInput.Player.Jump.performed -= Jump;
     }
 
-    private void checkAttack(InputAction.CallbackContext context){
-        if(state == states.attacking) return;
-        if(context.action.name == "Attack2" && !lockedIn)return;
+    private void checkAttack(InputAction.CallbackContext context)
+    {
+        if (state == states.attacking) return;
+        if (context.action.name == "Attack2" && !lockedIn) return;
         state = states.attacking;
         StartCoroutine(flicker(context.action.name));
         attackDictionary[new Tuple<attackStates, String, bool>(dirState, context.action.name, characterController.isGrounded)]?.DynamicInvoke();
-    }
-
-    private IEnumerator flicker(string trigger){
-        animator.SetTrigger(trigger);
-        yield return new WaitForEndOfFrame();
-        animator.ResetTrigger(trigger);
     }
 
     private void Lock(InputAction.CallbackContext context)
@@ -261,7 +288,7 @@ public class PlayerController : MonoBehaviour
             lockedIn = false;
             return;
         }
-        
+
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
         List<GameObject> markedEnemies = new List<GameObject>();
         float dist = Mathf.Infinity;
@@ -276,12 +303,14 @@ public class PlayerController : MonoBehaviour
                 lockedIn = true;
             }
         }
-        if(markedEnemies.Count == 0) return;
+        if (markedEnemies.Count == 0) return;
         for (int i = 0; i < markedEnemies.Count; i++)
         {
-            if(dist > (markedEnemies[i].transform.position - transform.position).magnitude)
-            {dist = (markedEnemies[i].transform.position - transform.position).magnitude;
-            closetEnemy = markedEnemies[i].transform;}
+            if (dist > (markedEnemies[i].transform.position - transform.position).magnitude)
+            {
+                dist = (markedEnemies[i].transform.position - transform.position).magnitude;
+                closetEnemy = markedEnemies[i].transform;
+            }
         }
         lockTarget = closetEnemy;
         Debug.Log(closetEnemy.name);
@@ -290,11 +319,18 @@ public class PlayerController : MonoBehaviour
     {
         if (characterController.isGrounded)
         {
-            verticalVelocity = Mathf.Sqrt(gravity * -3 * jumpHeight);
+            isAirborn = true;
+            StartCoroutine(flicker("Jump"));
+            swordProgression = 0;
+            state = states.attacking;
+            StartCoroutine(M1coroutine(0.2f));
+            if(WishVertical > -0.706) verticalVelocity = Mathf.Sqrt(gravity * -3 * jumpHeight);
+            else move = (lockTarget.position - transform.position).normalized * -10;
         }
     }
 
     // helper functions
+
 
     private void launchAttack(Collider other, Vector3 pos)
     {
@@ -315,11 +351,23 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    
 
+    private IEnumerator flicker(string trigger)
+    {
+        animator.SetTrigger(trigger);
+        Debug.Log(trigger);
+        yield return new WaitForSeconds(0.1f);
+        animator.ResetTrigger(trigger);
+    }
+    private IEnumerator StingerSupplement()
+    {
+        isStinger = true;
+        yield return new WaitForSeconds(0.5f);
+        isStinger = false;
+    }
     private IEnumerator RollingActionSupplement(Vector3 pos)
     {
-        move= Vector3.zero;
+        move = Vector3.zero;
         for (int i = 0; i < 5; i++)
         {
             yield return new WaitForSeconds(0.1f);
@@ -329,19 +377,23 @@ public class PlayerController : MonoBehaviour
     }
     private IEnumerator SawSupplement()
     {
-         move= Vector3.zero;
+        move = Vector3.zero;
         for (int i = 0; i < 5; i++)
         {
             yield return new WaitForSeconds(0.125f);
-            launchAttack(hitboxes[0], transform.position +transform.forward);
+            launchAttack(hitboxes[0], transform.position + transform.forward);
         }
         state = states.idle;
     }
-    private IEnumerator RisingStrikeSupplement(){
+    private IEnumerator RisingStrikeSupplement()
+    {
         isItHighTime = true;
+       
         yield return new WaitForSeconds(0.2f);
         isItHighTime = false;
-        if(highTime > 0.2f){
+        if (highTime > 0.2f)
+        {
+            isAirborn = true;
             verticalVelocity = 16;
         }
         Debug.Log(highTime);
