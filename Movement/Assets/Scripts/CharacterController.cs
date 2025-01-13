@@ -1,8 +1,6 @@
 // TODO
 /* 
 
-- implent animations
-- finish rest of moves
 - finsh the FUCKING maze
 - finish enemy
 - HELP!!!
@@ -55,11 +53,6 @@ public class PlayerController : MonoBehaviour
     private float highTime = 0;
     private float dirValueY = 0, dirValueX = 0, oldDirM = 0, WishVertical = 0;
     private Vector2 oldDir = Vector2.zero;
-    Dictionary<string, Vector3> sVFXDictionary = new Dictionary<string,Vector3>{ 
-        {"Slash1",new Vector3(2.8f, 0.3f, 80f)}, 
-        {"Slash2",new Vector3(-23.2f, 101f, 8f)},
-        {"Slash3",new Vector3(7.6f, -1.4f, 78.6f)}
-        };
 
     enum states
     {
@@ -89,7 +82,7 @@ public class PlayerController : MonoBehaviour
     private void BasicAttack()
     {
         if ((lockTarget.position - transform.position).magnitude > 2)
-            move = transform.forward * 3;
+            move = transform.forward * 2;
         if (timeSinceLastSwing > 1) swordProgression = 0;
         timeSinceLastSwing = 0;
         launchAttack(hitboxes[0], transform.position + transform.forward * 2);
@@ -261,14 +254,15 @@ public class PlayerController : MonoBehaviour
         move.y = verticalVelocity;
         animator.SetBool("Grounded", characterController.isGrounded);
         if(verticalVelocity < -1 && !characterController.isGrounded) {
-            Debug.Log("falling");
+
             animator.SetBool("Fall", true);
             if(characterController.isGrounded) verticalVelocity = 0;
         }
         else animator.SetBool("Fall", false);
         if(characterController.isGrounded){
-            if(isAirborn && !isHelmBringer){
+            if(isAirborn){
                 isAirborn = false;
+                swordProgression = 0;
                 StartCoroutine(flicker("Land"));
             }
         }
