@@ -87,7 +87,6 @@ public class PlayerController : MonoBehaviour
         timeSinceLastSwing = 0;
         launchAttack(hitboxes[0], transform.position + transform.forward * 2);
         animator.SetInteger("SwordProgression", swordProgression);
-        Debug.Log(swordProgression);
         if (swordProgression < 2) swordProgression += 1;
         else {
             swordProgression = 0;
@@ -177,6 +176,7 @@ public class PlayerController : MonoBehaviour
         input = inputMove.ReadValue<Vector2>();
         timeSinceLastSwing += Time.deltaTime;
         if (isItHighTime && playerInput.Player.Attack1.IsPressed()) highTime += Time.deltaTime;
+        if(lockTarget == null) lockTarget = transform;
         targetDir = (lockTarget.position - transform.position).normalized;
         switch (state)
         {
@@ -311,6 +311,7 @@ public class PlayerController : MonoBehaviour
         }
 
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        Debug.Log(enemies);
         List<GameObject> markedEnemies = new List<GameObject>();
         float dist = Mathf.Infinity;
         Transform closetEnemy = transform;
@@ -321,6 +322,7 @@ public class PlayerController : MonoBehaviour
             if (Physics.Raycast(transform.position, enemies[i].transform.position - transform.position, out hit, 20f) && hit.transform.tag == "Enemy" && hit.distance > (lockTarget.position - transform.position).magnitude)
             {
                 markedEnemies.Add(enemies[i]);
+                Debug.DrawLine(transform.position, hit.point, Color.red, 1f);
                 lockedIn = true;
             }
         }
@@ -334,7 +336,6 @@ public class PlayerController : MonoBehaviour
             }
         }
         lockTarget = closetEnemy;
-        Debug.Log(closetEnemy.name);
     }
     private void Jump(InputAction.CallbackContext context)
     {
@@ -411,8 +412,10 @@ public class PlayerController : MonoBehaviour
             HurtBox hurtBox = col.transform.GetComponent<HurtBox>();
             if (hurtBox != null)
             {
-                Debug.Log(col.name + " hit");
-                if (hurtBox.TakeDamage(10) && col.transform == lockTarget) { lockedIn = false; lockTarget = transform; }
+                if (hurtBox.TakeDamage(10) && col.transform == lockTarget) { 
+                    lockedIn = false;
+                    Lock(new InputAction.CallbackContext());
+                 }
                 didHit = true;
             }
         }
@@ -426,7 +429,6 @@ public class PlayerController : MonoBehaviour
     private IEnumerator flicker(string trigger)
     {
         animator.SetTrigger(trigger);
-        Debug.Log(trigger);
         yield return new WaitForSeconds(0.1f);
         animator.ResetTrigger(trigger);
     }
