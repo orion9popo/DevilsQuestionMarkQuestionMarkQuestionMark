@@ -9,7 +9,7 @@ public class Pathfinding : MonoBehaviour
 {
     public Vector2Int startPosition;
     public Vector2Int endPosition;
-    public float speed = 1f;
+    public float speed = 10f;
     public GameObject[] packlings;
     public GameObject player;
     private Node[,] nodes;
@@ -17,6 +17,7 @@ public class Pathfinding : MonoBehaviour
     private HashSet<Node> closedList;
     public MazeGenerator mazeGenerator;
     private Vector3 desiredNode;
+    private bool firstNode = true;
 
     void Start()
     {
@@ -28,7 +29,7 @@ public class Pathfinding : MonoBehaviour
         //startPosition = new Vector2Int(1, 1);
         //endPosition = new Vector2Int(mazeGenerator.width - 2, mazeGenerator.height - 2);
 
-        try{FindPath(startPosition, endPosition);}catch{Destroy(gameObject);}
+        FindPath(startPosition, endPosition);
         Collider hitbox = GameObject.Find("M1Hitbox").GetComponent<Collider>();
         foreach (GameObject packling in packlings)
         {
@@ -50,16 +51,19 @@ public class Pathfinding : MonoBehaviour
             }
             Destroy(gameObject);
         }*/
-        try{if((player.transform.position - transform.position).magnitude < 10){
+        try{if((player.transform.position - transform.position).magnitude < 8){
             foreach (GameObject packling in packlings)
             {
                 packling.transform.SetParent(null);
                 packling.GetComponent<EnemyAI>().thePack = false;
+                packling.GetComponent<Rigidbody>().isKinematic = false;
             }
             Destroy(gameObject);
         }
-        transform.position = Vector3.MoveTowards(transform.position, desiredNode, speed * Time.deltaTime);
+        transform.LookAt(desiredNode);
+        transform.position = Vector3.MoveTowards(transform.position, desiredNode, 10 * Time.deltaTime);
     }catch{
+        Debug.Log("2");
         Destroy(gameObject);
     }
     }
@@ -81,6 +85,7 @@ public class Pathfinding : MonoBehaviour
         }
     }
     catch{
+        Debug.Log("1");
         Destroy(gameObject);
     }
     }
@@ -187,9 +192,12 @@ public class Pathfinding : MonoBehaviour
         {
             foreach (Node node in path)
             {
-                desiredNode = new Vector3(node.GridPosition.x * 6, 3, node.GridPosition.y * 6);
-                transform.position = desiredNode;
-                Debug.Log("Node");
+                desiredNode = new Vector3(node.GridPosition.x * 10, 3, node.GridPosition.y * 10);
+                Debug.DrawLine(transform.position, desiredNode, Color.red, 10000f);
+                if(firstNode){
+                    transform.position = desiredNode;
+                    firstNode = false;
+                }
                 yield return new WaitUntil(gotToNode);
             }
             startPosition = endPosition;
@@ -201,7 +209,7 @@ public class Pathfinding : MonoBehaviour
         }
     }
     Boolean gotToNode(){
-        if((desiredNode - transform.position).magnitude < 0.1f){
+        if((desiredNode - transform.position).magnitude < 0.01f){
             return true;
         }
         return false;

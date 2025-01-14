@@ -242,7 +242,7 @@ public class PlayerController : MonoBehaviour
         {
             if (Input.GetMouseButton(1))
             {
-                y = Input.GetAxis("mouse X");
+                y = Input.GetAxis("Mouse X");
                 x = Input.GetAxis("Mouse Y");
                 rotate = new Vector3(x, y * sensitivity, 0);
                 cam.transform.eulerAngles = cam.transform.eulerAngles - rotate * 4;
@@ -335,12 +335,10 @@ public class PlayerController : MonoBehaviour
 
         for (int i = 0; i < enemies.Length; i++)
         {
-            Debug.Log(enemies[i]);
             RaycastHit hit;
             if (Physics.Raycast(transform.position, enemies[i].transform.position - transform.position, out hit, 20f) && hit.transform.tag == "Enemy" && hit.distance > (lockTarget.position - transform.position).magnitude)
             {
                 markedEnemies.Add(enemies[i]);
-                Debug.Log(enemies[i]);
                 Debug.DrawLine(transform.position, hit.point, Color.red, 1f);
                 lockedIn = true;
             }

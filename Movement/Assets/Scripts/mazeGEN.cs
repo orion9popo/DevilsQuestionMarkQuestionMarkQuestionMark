@@ -14,6 +14,7 @@ public class MazeGenerator : MonoBehaviour
     private List<Vector2Int> wallList;
     public MazeStateManager stateManager;
     public GameObject player;
+    private int enmeyCount = 0;
 
     void Start()
     {
@@ -72,7 +73,7 @@ public class MazeGenerator : MonoBehaviour
         {
             for (int j = 0; j < height; j++)
             {
-                GameObject cellObj = Instantiate(cellPrefab, new Vector3(i * 6, 10, j * 6), Quaternion.identity);
+                GameObject cellObj = Instantiate(cellPrefab, new Vector3(i * 10, 10, j * 10), Quaternion.identity);
                 CellState cellState = cellObj.GetComponent<CellState>();
                 cellState.x = i;
                 cellState.y = j;
@@ -172,18 +173,17 @@ public class MazeGenerator : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                Vector3 position = new Vector3(x * 6, 0, y * 6);
+                Vector3 position = new Vector3(x * 10, 0, y * 10    );
                 if (grid[x, y].IsWall)
                 {
                     Instantiate(wallPrefab, position, Quaternion.identity, transform);
                 }
                 else
                 {
-                    if (Random.Range(0, 30) == 1)
+                    if (Random.Range(0, 20) == 1)
                     {
-                        Debug.Log(position);
+                        enmeyCount += 4;
                         GameObject packer = Instantiate(thePack, position + Vector3.up*3, quaternion.identity, transform);
-                        AgentController agentController = thePack.GetComponent<AgentController>();
                         Pathfinding pathfinding = thePack.GetComponent<Pathfinding>();
                         pathfinding.player = player;
                         int X, Y;
@@ -195,7 +195,6 @@ public class MazeGenerator : MonoBehaviour
                         pathfinding.startPosition = new Vector2Int(x,y);
                         pathfinding.mazeGenerator = this;
                         Debug.Log(pathfinding.mazeGenerator + " | " + pathfinding.player);
-                        agentController.stateManager = transform.GetComponent<MazeStateManager>();
                     }
                     Instantiate(floorPrefab, position, Quaternion.identity, transform);
 

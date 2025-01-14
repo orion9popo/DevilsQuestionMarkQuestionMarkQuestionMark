@@ -25546,8 +25546,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8032278b0759453e91c8b23b832df5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 10
-  height: 10
+  width: 15
+  height: 15
 --- !u!114 &972998273
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25560,11 +25560,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d66d1eb322faa4462a9414be3ebec235, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 21
-  height: 21
+  width: 15
+  height: 15
   floorPrefab: {fileID: 73314688988516994, guid: 24602ba7014b31145aeb23be6de19f07, type: 3}
   wallPrefab: {fileID: 8740431403080021460, guid: f3fd98c799155de42b1b5c85eecbc7d8, type: 3}
-  cellPrefab: {fileID: 6150763423769452057, guid: c30d072ddc97e4248afbd7c8669fc446, type: 3}
+  cellPrefab: {fileID: 1207935355657423573, guid: b7974a244561a4773a9c60e41674359a, type: 3}
   thePack: {fileID: 6475579478467402773, guid: 4cb0548cbbb714243ad8232230f8ccd7, type: 3}
   stateManager: {fileID: 972998272}
   player: {fileID: 2075481100}
@@ -55783,6 +55783,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: 100
+  enemy: {fileID: 0}
 --- !u!114 &2075481103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -55869,7 +55870,7 @@ Transform:
   m_GameObject: {fileID: 2075481100}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 30.92, y: 3.15, z: 17.12}
+  m_LocalPosition: {x: 30.92, y: 4.06, z: 8.99}
   m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 0
   m_Children:

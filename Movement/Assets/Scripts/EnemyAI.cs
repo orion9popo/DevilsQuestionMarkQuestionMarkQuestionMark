@@ -44,8 +44,7 @@ public class EnemyAI : MonoBehaviour
     void Update()
     {
         if (thePack) { 
-            animator.SetBool("IsWalking", true); 
-            transform.LookAt(transform.parent.transform.forward + transform.position); 
+            animator.SetBool("IsWalking", true);  
             return; 
         }
         if (isDamaged || isDying) { transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z)); return; }
