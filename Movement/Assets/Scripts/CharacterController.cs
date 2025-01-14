@@ -32,7 +32,7 @@ public class PlayerController : MonoBehaviour
     public PlayerInputActions playerInput;
     public Collider[] hitboxes;
     public GameObject handleBone;
-    public GameObject[] VFX;
+    public ParticleSystem[] VFX;
     CharacterController characterController;
     private float turnSmoothVelocity;
     private float verticalVelocity = -1;
@@ -183,6 +183,8 @@ public class PlayerController : MonoBehaviour
             case states.idle:
                 WishVertical = 0;
                 animator.SetFloat("WishVertical", WishVertical);
+                VFX[2].gameObject.SetActive(false);
+                //VFX[2].Play();
                 if (input.magnitude > 0.1)
                 {
                     state = states.running;
@@ -196,7 +198,7 @@ public class PlayerController : MonoBehaviour
                 break;
 
             case states.running:
-
+                if(!isAirborn) VFX[2].gameObject.SetActive(true);
                 float targetAngle = Mathf.Atan2(move.x, move.z) * Mathf.Rad2Deg;
                 float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
                 move = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
@@ -209,7 +211,8 @@ public class PlayerController : MonoBehaviour
                 }
 
                 transform.rotation = Quaternion.Euler(0f, angle, 0f);
-                move = (cam.transform.forward * input.y - Vector3.Cross(cam.transform.forward, cam.transform.up) * input.x).normalized;
+                Vector3 Mmove = new Vector3(cam.transform.forward.x, 0, cam.transform.forward.z).normalized;
+                move = (Mmove* input.y - Vector3.Cross(Mmove, cam.transform.up) * input.x).normalized;
                 WishVertical = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, targetDir);
                 if (lockedIn && dirState == attackStates.back) move *= speed * 0.5f;
                 else move *= speed;
@@ -233,13 +236,13 @@ public class PlayerController : MonoBehaviour
             animator.SetFloat("WishVertical", WishVertical);
             if (WishVertical > 0.707f) dirState = attackStates.forward;
             else if (WishVertical < -0.707f) dirState = attackStates.back;
-            else dirState = attackStates.still;
+            else dirState = attackStates.still; 
         }
         else
         {
             if (Input.GetMouseButton(1))
             {
-                y = Input.GetAxis("Mouse X");
+                y = Input.GetAxis("mouse X");
                 x = Input.GetAxis("Mouse Y");
                 rotate = new Vector3(x, y * sensitivity, 0);
                 cam.transform.eulerAngles = cam.transform.eulerAngles - rotate * 4;
@@ -266,6 +269,7 @@ public class PlayerController : MonoBehaviour
                 StartCoroutine(flicker("Land"));
             }
         }
+        compensateForWalls(transform.position, cam.transform.position);
         characterController.Move(move * Time.deltaTime);
     }
 
@@ -281,8 +285,10 @@ public class PlayerController : MonoBehaviour
         playerInput.Player.Attack2.performed += checkAttack;
         playerInput.Player.LockOn.performed += Lock;
         playerInput.Player.Jump.performed += Jump;
+        //playerInput.Player.MouseWheel.performed += mouseScroll;
         playerInput.Enable();
     }
+
     void OnDisable()
     {
         playerInput.Disable();
@@ -290,6 +296,18 @@ public class PlayerController : MonoBehaviour
         playerInput.Player.Attack2.performed -= checkAttack;
         playerInput.Player.LockOn.performed -= Lock;
         playerInput.Player.Jump.performed -= Jump;
+    }
+    /*private void mouseScroll(InputAction.CallbackContext value)
+    {
+        float scroll = value.ReadValue<Vector2>().y * 0.01f;
+        cam.transform.position += cam.transform.forward * scroll;
+    }*/
+
+    private void compensateForWalls(Vector3 start, Vector3 to){
+        RaycastHit hit;
+        if(Physics.Raycast(start, (to-start).normalized, out hit, 11.5f, 1 <<7)){
+            cam.transform.position = hit.point;
+        }
     }
 
     private void checkAttack(InputAction.CallbackContext context)
@@ -311,17 +329,18 @@ public class PlayerController : MonoBehaviour
         }
 
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        Debug.Log(enemies);
         List<GameObject> markedEnemies = new List<GameObject>();
         float dist = Mathf.Infinity;
         Transform closetEnemy = transform;
 
         for (int i = 0; i < enemies.Length; i++)
         {
+            Debug.Log(enemies[i]);
             RaycastHit hit;
             if (Physics.Raycast(transform.position, enemies[i].transform.position - transform.position, out hit, 20f) && hit.transform.tag == "Enemy" && hit.distance > (lockTarget.position - transform.position).magnitude)
             {
                 markedEnemies.Add(enemies[i]);
+                Debug.Log(enemies[i]);
                 Debug.DrawLine(transform.position, hit.point, Color.red, 1f);
                 lockedIn = true;
             }
@@ -372,30 +391,30 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator sawSwordVFXm()
     {
-        VFX[0].SetActive(true);
+        VFX[0].gameObject.SetActive(true);
         Quaternion rot = handleBone.transform.rotation;
         VFX[0].transform.rotation = rot;
         VFX[0].transform.SetParent(handleBone.transform);
         VFX[0].transform.localPosition = Vector3.zero;
         yield return new WaitForSeconds(0.3f);
         VFX[0].transform.SetParent(null);
-        VFX[0].SetActive(false);
+        VFX[0].gameObject.SetActive(false);
     }
     private IEnumerator jumpVFXm(){
-        VFX[1].SetActive(true);
+        VFX[1].gameObject.SetActive(true);
         VFX[1].transform.position = transform.position - Vector3.up * 1.2f;
         yield return new WaitForSeconds(0.5f);
-        VFX[1].SetActive(false);
+        VFX[1].gameObject.SetActive(false);
     }
 
     private IEnumerator SwordVFXm(){
-        VFX[0].SetActive(true);
+        VFX[0].gameObject.SetActive(true);
         Vector3 pos = transform.position+ Vector3.up + transform.forward;
         Quaternion rot = handleBone.transform.rotation ;
         VFX[0].transform.position = pos;
         VFX[0].transform.rotation = rot;
         yield return new WaitForSeconds(0.3f);
-        VFX[0].SetActive(false);
+        VFX[0].gameObject.SetActive(false);
     }
 
     private bool launchAttack(Collider other, Vector3 pos)
@@ -414,12 +433,17 @@ public class PlayerController : MonoBehaviour
             {
                 if (hurtBox.TakeDamage(10) && col.transform == lockTarget) { 
                     lockedIn = false;
-                    Lock(new InputAction.CallbackContext());
+                    lockTarget.tag = "Dying";
+                    StartCoroutine(delaytag());
                  }
                 didHit = true;
             }
         }
         return didHit;
+    }
+    private IEnumerator delaytag(){
+        yield return new WaitForSeconds(0.1f);
+        Lock(new InputAction.CallbackContext());
     }
     private IEnumerator delayAirborne(){
         yield return new WaitForEndOfFrame();

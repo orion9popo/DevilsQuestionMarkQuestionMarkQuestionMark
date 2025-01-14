@@ -17,7 +17,6 @@ public class AgentController : MonoBehaviour
         if (stateManager.cellStates.ContainsKey(startCoords))
         {
             currentState = stateManager.cellStates[startCoords];
-            transform.position = new Vector3(currentState.x, 0, currentState.y);
         }
         else
         {

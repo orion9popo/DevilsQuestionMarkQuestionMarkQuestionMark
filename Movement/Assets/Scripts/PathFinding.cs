@@ -1,32 +1,72 @@
 // Pathfinding.cs
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEditor.Rendering;
+using System;
+using Random = UnityEngine.Random;
 
 public class Pathfinding : MonoBehaviour
 {
     public Vector2Int startPosition;
     public Vector2Int endPosition;
-
+    public float speed = 1f;
+    public GameObject[] packlings;
+    public GameObject player;
     private Node[,] nodes;
     private List<Node> openList;
     private HashSet<Node> closedList;
-
-    private MazeGenerator mazeGenerator;
+    public MazeGenerator mazeGenerator;
+    private Vector3 desiredNode;
 
     void Start()
-{
-    mazeGenerator = GetComponent<MazeGenerator>();
-    InitializeNodes();
+    {
+        InitializeNodes();
+        if(mazeGenerator == null || player == null){ Destroy(gameObject); Debug.Log("destorying");}
+        Debug.Log( "from PathFinding " + mazeGenerator +" | " +player);
 
-    // Set start and end positions (ensure they are walkable and within the maze bounds)
-    startPosition = new Vector2Int(1, 1);
-    endPosition = new Vector2Int(mazeGenerator.width - 2, mazeGenerator.height - 2);
+        // Set start and end positions (ensure they are walkable and within the maze bounds)
+        //startPosition = new Vector2Int(1, 1);
+        //endPosition = new Vector2Int(mazeGenerator.width - 2, mazeGenerator.height - 2);
 
-    FindPath(startPosition, endPosition);
-}
+        try{FindPath(startPosition, endPosition);}catch{Destroy(gameObject);}
+        Collider hitbox = GameObject.Find("M1Hitbox").GetComponent<Collider>();
+        foreach (GameObject packling in packlings)
+        {
+            EnemyAI packlingAI = packling.GetComponent<EnemyAI>();
+            packlingAI.player = player.transform;
+            packlingAI.thePack = true;
+            packlingAI.hitbox = hitbox;
+        }
+    }
+    void Update()
+    {
+        /*RaycastHit hit;
+        if(Physics.Raycast(transform.position, (transform.position - player.transform.position).normalized, out hit, 10f) && hit.transform.tag == "Player"){
+            Debug.DrawLine(transform.position, hit.point);
+            foreach (GameObject packling in packlings)
+            {
+                packling.transform.SetParent(null);
+                packling.GetComponent<EnemyAI>().thePack = false;
+            }
+            Destroy(gameObject);
+        }*/
+        try{if((player.transform.position - transform.position).magnitude < 10){
+            foreach (GameObject packling in packlings)
+            {
+                packling.transform.SetParent(null);
+                packling.GetComponent<EnemyAI>().thePack = false;
+            }
+            Destroy(gameObject);
+        }
+        transform.position = Vector3.MoveTowards(transform.position, desiredNode, speed * Time.deltaTime);
+    }catch{
+        Destroy(gameObject);
+    }
+    }
 
     void InitializeNodes()
     {
+        try{
         int width = mazeGenerator.width;
         int height = mazeGenerator.height;
         nodes = new Node[width, height];
@@ -39,6 +79,10 @@ public class Pathfinding : MonoBehaviour
                 nodes[x, y] = new Node(new Vector2Int(x, y), isWalkable);
             }
         }
+    }
+    catch{
+        Destroy(gameObject);
+    }
     }
     void FindPath(Vector2Int startPos, Vector2Int endPos)
     {
@@ -143,15 +187,23 @@ public class Pathfinding : MonoBehaviour
         {
             foreach (Node node in path)
             {
-                Vector3 position = new Vector3(node.GridPosition.x, 0.5f, node.GridPosition.y);
-                GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                sphere.transform.position = position;
-                sphere.transform.localScale = Vector3.one * 0.5f;
-                sphere.GetComponent<Renderer>().material.color = Color.red;
-                yield return new WaitForSeconds(0.05f); // For visual effect
+                desiredNode = new Vector3(node.GridPosition.x * 6, 3, node.GridPosition.y * 6);
+                transform.position = desiredNode;
+                Debug.Log("Node");
+                yield return new WaitUntil(gotToNode);
             }
+            startPosition = endPosition;
+            do{
+                endPosition = new Vector2Int(Random.Range(0,mazeGenerator.width),Random.Range(0,mazeGenerator.height));
+            }
+            while(nodes[endPosition.x, endPosition.y].IsWalkable);
+            FindPath(startPosition, endPosition);
         }
-
-
+    }
+    Boolean gotToNode(){
+        if((desiredNode - transform.position).magnitude < 0.1f){
+            return true;
+        }
+        return false;
     }
 }

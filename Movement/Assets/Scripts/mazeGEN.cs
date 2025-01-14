@@ -1,14 +1,19 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.Mathematics;
+using Random = UnityEngine.Random;
+using System.IO;
+using UnityEngine.UIElements;
 
 public class MazeGenerator : MonoBehaviour
 {
     public int width = 21;  // Must be odd numbers to have walls surrounding paths
     public int height = 21;
-    public GameObject floorPrefab, wallPrefab, cellPrefab;
+    public GameObject floorPrefab, wallPrefab, cellPrefab, thePack;
     public Cell[,] grid;
     private List<Vector2Int> wallList;
     public MazeStateManager stateManager;
+    public GameObject player;
 
     void Start()
     {
@@ -29,7 +34,8 @@ public class MazeGenerator : MonoBehaviour
             }
         }
     }
-    void GenerateMaze(){ 
+    void GenerateMaze()
+    {
 
         System.Random rand = new System.Random(); // For consistent randomization
 
@@ -66,11 +72,11 @@ public class MazeGenerator : MonoBehaviour
         {
             for (int j = 0; j < height; j++)
             {
-                GameObject cellObj = Instantiate(cellPrefab, new Vector3(i, 0, j), Quaternion.identity);
+                GameObject cellObj = Instantiate(cellPrefab, new Vector3(i * 6, 10, j * 6), Quaternion.identity);
                 CellState cellState = cellObj.GetComponent<CellState>();
                 cellState.x = i;
                 cellState.y = j;
-                cellState.isWalkable = !grid[i,j].IsWall;
+                cellState.isWalkable = !grid[i, j].IsWall;
 
                 // Assign random reward/penalty
                 double roll = rand.NextDouble();
@@ -166,15 +172,33 @@ public class MazeGenerator : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                Vector3 position = new Vector3(x, 0, y);
-
+                Vector3 position = new Vector3(x * 6, 0, y * 6);
                 if (grid[x, y].IsWall)
                 {
                     Instantiate(wallPrefab, position, Quaternion.identity, transform);
                 }
                 else
                 {
+                    if (Random.Range(0, 30) == 1)
+                    {
+                        Debug.Log(position);
+                        GameObject packer = Instantiate(thePack, position + Vector3.up*3, quaternion.identity, transform);
+                        AgentController agentController = thePack.GetComponent<AgentController>();
+                        Pathfinding pathfinding = thePack.GetComponent<Pathfinding>();
+                        pathfinding.player = player;
+                        int X, Y;
+                        do {
+                            X = Random.Range(0, width); Y =Random.Range(0, height);
+                        }
+                        while (grid[X, Y].IsWall);
+                        pathfinding.endPosition = new Vector2Int(X,Y);
+                        pathfinding.startPosition = new Vector2Int(x,y);
+                        pathfinding.mazeGenerator = this;
+                        Debug.Log(pathfinding.mazeGenerator + " | " + pathfinding.player);
+                        agentController.stateManager = transform.GetComponent<MazeStateManager>();
+                    }
                     Instantiate(floorPrefab, position, Quaternion.identity, transform);
+
                 }
             }
         }
