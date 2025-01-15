@@ -35,7 +35,7 @@ public class HurtBox : MonoBehaviour
 
     private IEnumerator flicker(string name)
     {
-        if (animator != null)
+        if (animator != null && gameObject.tag != "Dying")
         {
             animator.SetTrigger(name);
             yield return new WaitForSeconds(0.01f);

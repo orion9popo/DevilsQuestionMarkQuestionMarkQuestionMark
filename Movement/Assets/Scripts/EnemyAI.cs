@@ -4,8 +4,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 
 public class EnemyAI : MonoBehaviour
@@ -16,6 +19,7 @@ public class EnemyAI : MonoBehaviour
     private Animator animator;
     private Rigidbody rigidbody;
     private BoxCollider boxCollider;
+    private GameObject enemyCount;
     public float speed;
     public bool thePack = false;
     public float attackSpeed;
@@ -39,6 +43,7 @@ public class EnemyAI : MonoBehaviour
         animator = GetComponent<Animator>();
         rigidbody = GetComponent<Rigidbody>();
         boxCollider = GetComponent<BoxCollider>();
+        enemyCount = GameObject.Find("EnemyCount");
     }
 
     void Update()
@@ -112,8 +117,6 @@ public class EnemyAI : MonoBehaviour
     private bool launchAttack(Collider other, Vector3 pos)
     {
         Collider[] cols = Physics.OverlapBox(pos, other.bounds.extents, transform.rotation);
-        GameObject visual = Instantiate(other.transform.gameObject, pos, transform.rotation);
-        StartCoroutine(DestoryHitbox(visual));
         bool didHit = false;
         foreach (Collider col in cols)
         {
@@ -143,6 +146,12 @@ public class EnemyAI : MonoBehaviour
     public void Kill()
     {
         Destroy(gameObject);
+        if(enemyCount != null){
+            TextMeshProUGUI text =enemyCount.GetComponent<TextMeshProUGUI>();
+            int currentCount = Int32.Parse(text.text.Substring(13));
+            if(currentCount ==1) SceneManager.LoadScene("Win");
+            text.text = "Enemies Left:" + (currentCount-1);
+        }
     }
     public void startKill()
     {

@@ -4,6 +4,7 @@ using Unity.Mathematics;
 using Random = UnityEngine.Random;
 using System.IO;
 using UnityEngine.UIElements;
+using TMPro;
 
 public class MazeGenerator : MonoBehaviour
 {
@@ -11,10 +12,11 @@ public class MazeGenerator : MonoBehaviour
     public int height = 21;
     public GameObject floorPrefab, wallPrefab, cellPrefab, thePack;
     public Cell[,] grid;
+    public TextMeshProUGUI enemyCountText;
     private List<Vector2Int> wallList;
     public MazeStateManager stateManager;
     public GameObject player;
-    private int enmeyCount = 0;
+    private int enemeyCount = 0;
 
     void Start()
     {
@@ -176,13 +178,13 @@ public class MazeGenerator : MonoBehaviour
                 Vector3 position = new Vector3(x * 10, 0, y * 10    );
                 if (grid[x, y].IsWall)
                 {
-                    Instantiate(wallPrefab, position, Quaternion.identity, transform);
+                    Instantiate(wallPrefab, position + Vector3.up * 10, Quaternion.identity, transform);
                 }
                 else
                 {
-                    if (Random.Range(0, 100) == 1)
+                    if (Random.Range(0, 10) == 1)
                     {
-                        enmeyCount += 4;
+                        enemeyCount += 4;
                         GameObject packer = Instantiate(thePack, position + Vector3.up*3, quaternion.identity, transform);
                         PathFinding pathfinding = thePack.GetComponent<PathFinding>();
                         pathfinding.player = player;
@@ -201,6 +203,7 @@ public class MazeGenerator : MonoBehaviour
                 }
             }
         }
+        enemyCountText.text = "Enemies Left:" + enemeyCount;
     }
 
 

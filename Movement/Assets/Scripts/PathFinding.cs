@@ -5,6 +5,8 @@ using UnityEditor.Rendering;
 using System;
 using Random = UnityEngine.Random;
 using System.Data.SqlTypes;
+using TMPro;
+using System.Collections;
 
 public class PathFinding : MonoBehaviour
 {
@@ -13,18 +15,20 @@ public class PathFinding : MonoBehaviour
     public float speed = 10f;
     public GameObject[] packlings;
     public GameObject player;
+    public TextMeshProUGUI enemyCount;
     private Node[,] nodes;
     private List<Node> openList;
     private HashSet<Node> closedList;
     public MazeGenerator mazeGenerator;
     private Vector3 desiredNode;
     private bool firstNode = true;
+    private bool IsDestroying = false;
 
     void Start()
     {
         InitializeNodes();
-        Debug.Log(startPosition);
-        if(mazeGenerator == null || player == null){ Destroy(gameObject); Debug.Log("destorying");}
+
+        if (mazeGenerator == null || player == null) { if (!IsDestroying) { IsDestroying = true; StartCoroutine(waitaBit()); } }
         //Debug.Log( "from PathFinding " + mazeGenerator +" | " +player);
 
         // Set start and end positions (ensure they are walkable and within the maze bounds)
@@ -53,48 +57,60 @@ public class PathFinding : MonoBehaviour
             }
             Destroy(gameObject);
         }*/
-        
-        try{if((player.transform.position - transform.position).magnitude < 8){
-            foreach (GameObject packling in packlings)
+
+        try
+        {
+            if ((player.transform.position - transform.position).magnitude < 8)
             {
-                packling.transform.SetParent(null);
-                packling.GetComponent<EnemyAI>().thePack = false;
-                packling.GetComponent<Rigidbody>().isKinematic = false;
+                foreach (GameObject packling in packlings)
+                {
+                    packling.transform.SetParent(null);
+                    packling.GetComponent<EnemyAI>().thePack = false;
+                    packling.GetComponent<Rigidbody>().isKinematic = false;
+                }
+                Destroy(gameObject);
             }
-            Destroy(gameObject);
+            transform.LookAt(desiredNode);
+            transform.position = Vector3.MoveTowards(transform.position, desiredNode, 3 * Time.deltaTime);
         }
-        transform.LookAt(desiredNode);
-        transform.position = Vector3.MoveTowards(transform.position, desiredNode, 10 * Time.deltaTime);
-    }catch{
-        Debug.Log("2");
-        Destroy(gameObject);
-    }
+        catch
+        {
+            if (!IsDestroying)
+            {
+                IsDestroying = true;
+                StartCoroutine(waitaBit());
+            }
+        }
     }
 
     void InitializeNodes()
     {
-        try{
-        int width = mazeGenerator.width;
-        int height = mazeGenerator.height;
-        nodes = new Node[width, height];
-
-        for (int x = 0; x < width; x++)
+        try
         {
-            for (int y = 0; y < height; y++)
+            int width = mazeGenerator.width;
+            int height = mazeGenerator.height;
+            nodes = new Node[width, height];
+
+            for (int x = 0; x < width; x++)
             {
-                bool isWalkable = !mazeGenerator.grid[x, y].IsWall;
-                nodes[x, y] = new Node(new Vector2Int(x, y), isWalkable);
+                for (int y = 0; y < height; y++)
+                {
+                    bool isWalkable = !mazeGenerator.grid[x, y].IsWall;
+                    nodes[x, y] = new Node(new Vector2Int(x, y), isWalkable);
+                }
+            }
+        }
+        catch
+        {
+            if(!IsDestroying){
+                IsDestroying = true;
+            StartCoroutine(waitaBit());
             }
         }
     }
-    catch{
-        Debug.Log("1");
-        Destroy(gameObject);
-    }
-    }
     void FindPath(Vector2Int startPos, Vector2Int endPos)
     {
-        
+
         Node startNode = nodes[startPos.x, startPos.y];
         Node endNode = nodes[endPos.x, endPos.y];
 
@@ -194,29 +210,44 @@ public class PathFinding : MonoBehaviour
         {
             foreach (Node node in path)
             {
-                Debug.Log(node.GridPosition);
                 desiredNode = new Vector3(node.GridPosition.x * 10, 3, node.GridPosition.y * 10);
                 Debug.DrawLine(transform.position, desiredNode, Color.red, 10000f);
-                /*if(firstNode){
+                if (firstNode)
+                {
                     transform.position = desiredNode;
                     firstNode = false;
-                }*/
+                }
                 yield return new WaitUntil(gotToNode);
             }
-            /*startPosition = endPosition;
-            do{
-                endPosition = new Vector2Int(Random.Range(0,mazeGenerator.width),Random.Range(0,mazeGenerator.height));
+            do
+            {
+                startPosition = new Vector2Int(Random.Range(0, mazeGenerator.width), Random.Range(0, mazeGenerator.height));
             }
-            while(nodes[endPosition.x, endPosition.y].IsWalkable);
-            Debug.Log(endPosition); */
-            //firstNode = true;
-            //FindPath(endPosition, startPos);
+            while (!nodes[startPosition.x, startPosition.y].IsWalkable);
+            do
+            {
+                endPosition = new Vector2Int(Random.Range(0, mazeGenerator.width), Random.Range(0, mazeGenerator.height));
+            }
+            while (!nodes[endPosition.x, endPosition.y].IsWalkable);
+            Debug.Log(nodes[startPosition.x, startPosition.y].IsWalkable + " ," + nodes[endPosition.x, endPosition.y].IsWalkable);
+            FindPath(endPosition, startPos);
         }
     }
-    Boolean gotToNode(){
-        if((desiredNode - transform.position).magnitude < 0.01f){
+    Boolean gotToNode()
+    {
+        if ((desiredNode - transform.position).magnitude < 0.01f)
+        {
             return true;
         }
         return false;
+    }
+    IEnumerator waitaBit()
+    {
+        yield return new WaitForSeconds(0.1f);
+        enemyCount = GameObject.Find("EnemyCount").GetComponent<TextMeshProUGUI>();
+        int currentCount = Int32.Parse(enemyCount.text.Substring(13));
+        Debug.Log(currentCount);
+        enemyCount.text = "Enemies Left:" + (currentCount - 4);
+        Destroy(gameObject);
     }
 }

@@ -10,15 +10,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Net.Sockets;
-using TMPro;
-using Unity.Mathematics;
-using UnityEditor.SearchService;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
-using UnityEngine.XR.WSA;
 using Debug = UnityEngine.Debug;
 
 public class PlayerController : MonoBehaviour
@@ -58,7 +52,8 @@ public class PlayerController : MonoBehaviour
     {
         idle,
         running,
-        attacking
+        attacking,
+        dying
     }
     enum attackStates
     {
@@ -85,7 +80,7 @@ public class PlayerController : MonoBehaviour
             move = transform.forward * 2;
         if (timeSinceLastSwing > 1) swordProgression = 0;
         timeSinceLastSwing = 0;
-        launchAttack(hitboxes[0], transform.position + transform.forward * 2);
+        launchAttack(hitboxes[0], transform.position + transform.forward * 2, 10);
         animator.SetInteger("SwordProgression", swordProgression);
         if (swordProgression < 2) swordProgression += 1;
         else {
@@ -110,13 +105,13 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(airAttack3Supplement());
             return;
         }
-        launchAttack(hitboxes[0], transform.position + transform.forward * 2);
+        launchAttack(hitboxes[0], transform.position + transform.forward * 2, 10);
         StartCoroutine(M1coroutine(0.33f));
     }
     private void Stinger()
     {
         move = 15 * targetDir;
-        launchAttack(hitboxes[3], transform.position + transform.forward * 5);
+        launchAttack(hitboxes[3], transform.position + transform.forward * 5, 10);
         StartCoroutine(M1coroutine(0.5f));
         StartCoroutine(StingerSupplement());
     }
@@ -124,7 +119,7 @@ public class PlayerController : MonoBehaviour
     {
         move = Vector3.zero;
         swordProgression = 0;
-        launchAttack(hitboxes[2], transform.position + transform.forward * 2 + Vector3.up * 1);
+        launchAttack(hitboxes[2], transform.position + transform.forward * 2 + Vector3.up * 1, 10);
         StartCoroutine(RisingStrikeSupplement());
     }
     private void RollingAction()
@@ -173,6 +168,7 @@ public class PlayerController : MonoBehaviour
     // Movement
     void Update()
     {
+        if(state == states.dying) return;
         input = inputMove.ReadValue<Vector2>();
         timeSinceLastSwing += Time.deltaTime;
         if (isItHighTime && playerInput.Player.Attack1.IsPressed()) highTime += Time.deltaTime;
@@ -312,7 +308,7 @@ public class PlayerController : MonoBehaviour
 
     private void checkAttack(InputAction.CallbackContext context)
     {
-        if (state == states.attacking) return;
+        if (state == states.attacking || state == states.dying) return;
         if (context.action.name == "Attack2" && !lockedIn) return;
         state = states.attacking;
         StartCoroutine(flicker(context.action.name));
@@ -321,6 +317,7 @@ public class PlayerController : MonoBehaviour
 
     private void Lock(InputAction.CallbackContext context)
     {
+        if(state == states.dying) return;
         if (lockedIn)
         {
             lockTarget = transform;
@@ -356,7 +353,7 @@ public class PlayerController : MonoBehaviour
     }
     private void Jump(InputAction.CallbackContext context)
     {
-        if (characterController.isGrounded)
+        if (characterController.isGrounded && state != states.dying)
         {
             if(dirValueY >-0.706) StartCoroutine(delayAirborne());
             StartCoroutine(flicker("Jump"));
@@ -367,6 +364,13 @@ public class PlayerController : MonoBehaviour
             else move = (lockTarget.position - transform.position).normalized * -10;
             StartCoroutine(jumpVFXm());
         }
+    }
+    public void death(){
+        SceneManager.LoadScene("Death");
+    }
+    public void startDeath(){
+        gameObject.tag = "Dying";
+        state = states.dying;
     }
 
     // helper functions
@@ -415,11 +419,9 @@ public class PlayerController : MonoBehaviour
         VFX[0].gameObject.SetActive(false);
     }
 
-    private bool launchAttack(Collider other, Vector3 pos)
+    private bool launchAttack(Collider other, Vector3 pos, float damage)
     {
         Collider[] cols = Physics.OverlapBox(pos, other.bounds.extents, transform.rotation);
-        GameObject visual = Instantiate(other.transform.gameObject, pos, transform.rotation);
-        StartCoroutine(DestoryHitbox(visual));
         bool didHit = false;
         foreach (Collider col in cols)
         {
@@ -429,7 +431,7 @@ public class PlayerController : MonoBehaviour
             HurtBox hurtBox = col.transform.GetComponent<HurtBox>();
             if (hurtBox != null)
             {
-                if (hurtBox.TakeDamage(10) && col.transform == lockTarget) { 
+                if (hurtBox.TakeDamage(damage) && col.transform == lockTarget) { 
                     lockedIn = false;
                     lockTarget.tag = "Dying";
                     StartCoroutine(delaytag());
@@ -456,7 +458,7 @@ public class PlayerController : MonoBehaviour
     }
     private IEnumerator HelmBringerSupplement(){
         yield return new WaitForSeconds(0.16666f);
-        launchAttack(hitboxes[2], transform.position + transform.forward * 2 + Vector3.down * 3);
+        launchAttack(hitboxes[2], transform.position + transform.forward * 2 + Vector3.down * 3, 15);
         verticalVelocity = -20;
     }
     private IEnumerator StingerSupplement()
@@ -471,7 +473,7 @@ public class PlayerController : MonoBehaviour
         for (int i = 0; i < 5; i++)
         {
             yield return new WaitForSeconds(0.1f);
-            launchAttack(hitboxes[1], pos);
+            launchAttack(hitboxes[1], pos, 5);
         }
         state = states.idle;
     }
@@ -481,7 +483,7 @@ public class PlayerController : MonoBehaviour
         for (int i = 0; i < 5; i++)
         {
             yield return new WaitForSeconds(0.125f);
-            launchAttack(hitboxes[0], transform.position + transform.forward);
+            launchAttack(hitboxes[0], transform.position + transform.forward, 5);
         }
         state = states.idle;
     }
@@ -504,7 +506,7 @@ public class PlayerController : MonoBehaviour
     }
     private IEnumerator airAttack3Supplement(){
         yield return new WaitForSeconds(0.3333f);
-        launchAttack(hitboxes[0], transform.position + transform.forward * 2);
+        launchAttack(hitboxes[0], transform.position + transform.forward * 2, 10);
     }
     private IEnumerator DestoryHitbox(GameObject hitbox)
     {
