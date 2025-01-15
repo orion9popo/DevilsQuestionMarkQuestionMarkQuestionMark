@@ -125,7 +125,6 @@ public class EnemyAI : MonoBehaviour
             {
                 hurtBox.TakeDamage(5);
                 didHit = true;
-                Debug.Log("did damage");
             }
         }
         return didHit;

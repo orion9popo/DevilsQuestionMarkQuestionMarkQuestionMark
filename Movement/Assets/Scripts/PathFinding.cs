@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using UnityEditor.Rendering;
 using System;
 using Random = UnityEngine.Random;
+using System.Data.SqlTypes;
 
-public class Pathfinding : MonoBehaviour
+public class PathFinding : MonoBehaviour
 {
     public Vector2Int startPosition;
     public Vector2Int endPosition;
@@ -22,8 +23,9 @@ public class Pathfinding : MonoBehaviour
     void Start()
     {
         InitializeNodes();
+        Debug.Log(startPosition);
         if(mazeGenerator == null || player == null){ Destroy(gameObject); Debug.Log("destorying");}
-        Debug.Log( "from PathFinding " + mazeGenerator +" | " +player);
+        //Debug.Log( "from PathFinding " + mazeGenerator +" | " +player);
 
         // Set start and end positions (ensure they are walkable and within the maze bounds)
         //startPosition = new Vector2Int(1, 1);
@@ -51,6 +53,7 @@ public class Pathfinding : MonoBehaviour
             }
             Destroy(gameObject);
         }*/
+        
         try{if((player.transform.position - transform.position).magnitude < 8){
             foreach (GameObject packling in packlings)
             {
@@ -91,6 +94,7 @@ public class Pathfinding : MonoBehaviour
     }
     void FindPath(Vector2Int startPos, Vector2Int endPos)
     {
+        
         Node startNode = nodes[startPos.x, startPos.y];
         Node endNode = nodes[endPos.x, endPos.y];
 
@@ -183,8 +187,6 @@ public class Pathfinding : MonoBehaviour
                 currentNode = currentNode.ParentNode;
             }
 
-            path.Reverse();
-
             // Visualize the path
             StartCoroutine(DrawPath(path));
         }
@@ -192,20 +194,23 @@ public class Pathfinding : MonoBehaviour
         {
             foreach (Node node in path)
             {
+                Debug.Log(node.GridPosition);
                 desiredNode = new Vector3(node.GridPosition.x * 10, 3, node.GridPosition.y * 10);
                 Debug.DrawLine(transform.position, desiredNode, Color.red, 10000f);
-                if(firstNode){
+                /*if(firstNode){
                     transform.position = desiredNode;
                     firstNode = false;
-                }
+                }*/
                 yield return new WaitUntil(gotToNode);
             }
-            startPosition = endPosition;
+            /*startPosition = endPosition;
             do{
                 endPosition = new Vector2Int(Random.Range(0,mazeGenerator.width),Random.Range(0,mazeGenerator.height));
             }
             while(nodes[endPosition.x, endPosition.y].IsWalkable);
-            FindPath(startPosition, endPosition);
+            Debug.Log(endPosition); */
+            //firstNode = true;
+            //FindPath(endPosition, startPos);
         }
     }
     Boolean gotToNode(){

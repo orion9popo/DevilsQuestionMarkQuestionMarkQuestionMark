@@ -180,11 +180,11 @@ public class MazeGenerator : MonoBehaviour
                 }
                 else
                 {
-                    if (Random.Range(0, 20) == 1)
+                    if (Random.Range(0, 100) == 1)
                     {
                         enmeyCount += 4;
                         GameObject packer = Instantiate(thePack, position + Vector3.up*3, quaternion.identity, transform);
-                        Pathfinding pathfinding = thePack.GetComponent<Pathfinding>();
+                        PathFinding pathfinding = thePack.GetComponent<PathFinding>();
                         pathfinding.player = player;
                         int X, Y;
                         do {
@@ -194,7 +194,7 @@ public class MazeGenerator : MonoBehaviour
                         pathfinding.endPosition = new Vector2Int(X,Y);
                         pathfinding.startPosition = new Vector2Int(x,y);
                         pathfinding.mazeGenerator = this;
-                        Debug.Log(pathfinding.mazeGenerator + " | " + pathfinding.player);
+                        Debug.Log(x + "," + y + " |" + pathfinding.startPosition);
                     }
                     Instantiate(floorPrefab, position, Quaternion.identity, transform);
 
