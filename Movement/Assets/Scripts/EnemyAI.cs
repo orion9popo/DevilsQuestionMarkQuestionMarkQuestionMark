@@ -53,8 +53,8 @@ public class EnemyAI : MonoBehaviour
             return; 
         }
         if (isDamaged || isDying) { transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z)); return; }
-        rigidbody.velocity = Vector3.zero;
-        rigidbody.angularVelocity = Vector3.zero;
+        rigidbody.velocity = new Vector3(0,rigidbody.velocity.y, 0);
+        rigidbody.angularVelocity = new Vector3(0,rigidbody.angularVelocity.y, 0);
         switch (state)
         {
             case States.Look:

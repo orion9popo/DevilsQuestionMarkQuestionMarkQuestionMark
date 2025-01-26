@@ -17,7 +17,7 @@ public class HurtBox : MonoBehaviour
     public Boolean TakeDamage(float damage)
     {
         if(gameObject.tag == "TheMachine"){
-            Instantiate(enemy, transform.position + transform.forward * 2, quaternion.identity);
+            Instantiate(enemy, transform.position - transform.forward * 3, quaternion.identity);
             EnemyAI enemyAI = enemy.GetComponent<EnemyAI>();
             enemyAI.player = GameObject.Find("datedevilhunter").transform;
             enemyAI.hitbox = GameObject.Find("M1Hitbox").GetComponent<Collider>();
