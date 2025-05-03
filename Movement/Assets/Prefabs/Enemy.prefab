@@ -394,6 +394,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: 100
+  enemy: {fileID: 0}
 --- !u!54 &7071712230869593948
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -428,7 +429,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7651277275042386201}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: e89274b9ef81643cabcea5a67f8b8ab8, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0

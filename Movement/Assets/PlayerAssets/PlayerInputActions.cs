@@ -80,6 +80,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Taunt"",
+                    ""type"": ""Button"",
+                    ""id"": ""ad0984e4-da9d-4c73-a627-083cdc533945"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -311,6 +320,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""MouseWheel"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""54c6e24c-5e2b-44c8-a018-049af4720736"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Taunt"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -904,6 +924,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Player_LockOn = m_Player.FindAction("LockOn", throwIfNotFound: true);
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         m_Player_MouseWheel = m_Player.FindAction("MouseWheel", throwIfNotFound: true);
+        m_Player_Taunt = m_Player.FindAction("Taunt", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -983,6 +1004,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_LockOn;
     private readonly InputAction m_Player_Jump;
     private readonly InputAction m_Player_MouseWheel;
+    private readonly InputAction m_Player_Taunt;
     public struct PlayerActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -993,6 +1015,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @LockOn => m_Wrapper.m_Player_LockOn;
         public InputAction @Jump => m_Wrapper.m_Player_Jump;
         public InputAction @MouseWheel => m_Wrapper.m_Player_MouseWheel;
+        public InputAction @Taunt => m_Wrapper.m_Player_Taunt;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1020,6 +1043,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @MouseWheel.started += instance.OnMouseWheel;
             @MouseWheel.performed += instance.OnMouseWheel;
             @MouseWheel.canceled += instance.OnMouseWheel;
+            @Taunt.started += instance.OnTaunt;
+            @Taunt.performed += instance.OnTaunt;
+            @Taunt.canceled += instance.OnTaunt;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -1042,6 +1068,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @MouseWheel.started -= instance.OnMouseWheel;
             @MouseWheel.performed -= instance.OnMouseWheel;
             @MouseWheel.canceled -= instance.OnMouseWheel;
+            @Taunt.started -= instance.OnTaunt;
+            @Taunt.performed -= instance.OnTaunt;
+            @Taunt.canceled -= instance.OnTaunt;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1230,6 +1259,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnLockOn(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnMouseWheel(InputAction.CallbackContext context);
+        void OnTaunt(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

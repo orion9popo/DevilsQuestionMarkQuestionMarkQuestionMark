@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: dbc3234b5135a43319b470d172856213
+guid: 12b32df043638401f97de74b35070e8f
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -33,11 +33,40 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Armature|1
-      takeName: Armature|1
-      internalID: -6294259000607041188
+      name: Armature|AirRollingThunderLoop
+      takeName: Armature|AirRollingThunderLoop
+      internalID: 1589400275603245391
       firstFrame: 0
-      lastFrame: 0
+      lastFrame: 10
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Armature|AirRollingThunderStart
+      takeName: Armature|AirRollingThunderStart
+      internalID: 2268820908409235950
+      firstFrame: 0
+      lastFrame: 15
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -66,7 +95,7 @@ ModelImporter:
       takeName: Armature|AirSlash1
       internalID: 684849119017096691
       firstFrame: 0
-      lastFrame: 119
+      lastFrame: 120
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -86,7 +115,7 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.08911308
+      - time: 0.10921502
         functionName: SwordVFX
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
@@ -102,7 +131,7 @@ ModelImporter:
       takeName: Armature|AirSlash2
       internalID: -6599135790395930650
       firstFrame: 0
-      lastFrame: 119
+      lastFrame: 120
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -122,7 +151,7 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.103658535
+      - time: 0.071428575
         functionName: SwordVFX
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
@@ -158,7 +187,7 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.19512194
+      - time: 0.1978022
         functionName: SwordVFX
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
@@ -199,11 +228,11 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: Armature|Circle.001Action
-      takeName: Armature|Circle.001Action
-      internalID: -3940031873545852154
+      name: Armature|chairRest
+      takeName: Armature|chairRest
+      internalID: 6410393979283931384
       firstFrame: 0
-      lastFrame: 0
+      lastFrame: 249
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -281,17 +310,10 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.9897959
+      - time: 0.9505494
         functionName: death
         data: 
-        objectReferenceParameter: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
-        floatParameter: 0
-        intParameter: 0
-        messageOptions: 0
-      - time: 0
-        functionName: startDeath
-        data: 
-        objectReferenceParameter: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
+        objectReferenceParameter: {fileID: 11500000, guid: bc7dda1eb5054fd43bfad71bdd8b0653, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
@@ -333,14 +355,14 @@ ModelImporter:
       takeName: Armature|Fall
       internalID: -5025487861805838091
       firstFrame: 0
-      lastFrame: 89
+      lastFrame: 90
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 1
+      loopTime: 0
       loopBlend: 0
       loopBlendOrientation: 0
       loopBlendPositionY: 0
@@ -362,7 +384,7 @@ ModelImporter:
       takeName: Armature|Fury
       internalID: 8638131620699760193
       firstFrame: 0
-      lastFrame: 119
+      lastFrame: 120
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -411,7 +433,7 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.40243903
+      - time: 0.36263734
         functionName: SwordVFX
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
@@ -446,7 +468,14 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0
+        functionName: HelmBringerLandAnimEvent
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
@@ -475,14 +504,7 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events:
-      - time: 0.26845637
-        functionName: HelmBringerLandAnimEvent
-        data: 
-        objectReferenceParameter: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
-        floatParameter: 0
-        intParameter: 0
-        messageOptions: 0
+      events: []
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
@@ -492,7 +514,7 @@ ModelImporter:
       takeName: Armature|Idle
       internalID: -8945691123924629249
       firstFrame: 0
-      lastFrame: 119
+      lastFrame: 120
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -521,7 +543,7 @@ ModelImporter:
       takeName: Armature|Jump
       internalID: 1079665108409675491
       firstFrame: 0
-      lastFrame: 90
+      lastFrame: 91
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -550,7 +572,94 @@ ModelImporter:
       takeName: Armature|Land
       internalID: -7690588252518188395
       firstFrame: 0
-      lastFrame: 99
+      lastFrame: 51
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Armature|LearnedTechnique
+      takeName: Armature|LearnedTechnique
+      internalID: 2180914799229347241
+      firstFrame: 0
+      lastFrame: 44
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Armature|LearnedTechniqueLoop
+      takeName: Armature|LearnedTechniqueLoop
+      internalID: 7512821722335960781
+      firstFrame: 0
+      lastFrame: 30
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Armature|PlaneAction
+      takeName: Armature|PlaneAction
+      internalID: 2920023865792766560
+      firstFrame: 0
+      lastFrame: 0
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -579,7 +688,7 @@ ModelImporter:
       takeName: Armature|RisingStrike
       internalID: -7628534910347248638
       firstFrame: 0
-      lastFrame: 99
+      lastFrame: 100
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -599,10 +708,10 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.15243903
+      - time: 0.13736264
         functionName: SwordVFX
         data: 
-        objectReferenceParameter: {instanceID: 0}
+        objectReferenceParameter: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
@@ -615,7 +724,7 @@ ModelImporter:
       takeName: Armature|RollingAction
       internalID: -6824636734663445699
       firstFrame: 0
-      lastFrame: 158
+      lastFrame: 159
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -644,7 +753,7 @@ ModelImporter:
       takeName: Armature|RollingThunder
       internalID: 1166246147777453490
       firstFrame: 0
-      lastFrame: 120
+      lastFrame: 184
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -722,7 +831,7 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.20731707
+      - time: 0.1978022
         functionName: sawSwordVFX
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
@@ -758,7 +867,7 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.085365854
+      - time: 0.07849829
         functionName: SwordVFX
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
@@ -774,7 +883,7 @@ ModelImporter:
       takeName: Armature|Slash2
       internalID: 4336271007893979479
       firstFrame: 0
-      lastFrame: 119
+      lastFrame: 120
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -794,7 +903,7 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.11272727
+      - time: 0.10456438
         functionName: SwordVFX
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
@@ -810,7 +919,7 @@ ModelImporter:
       takeName: Armature|Slash3
       internalID: 2762399794109667122
       firstFrame: 0
-      lastFrame: 119
+      lastFrame: 120
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -830,7 +939,7 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.12804878
+      - time: 0.104395606
         functionName: SwordVFX
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 55a4019aaa0616b46b9be85558a99c3a, type: 3}
@@ -854,6 +963,93 @@ ModelImporter:
       loop: 0
       hasAdditiveReferencePose: 0
       loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Armature|Taunt
+      takeName: Armature|Taunt
+      internalID: -9032938285234064413
+      firstFrame: 0
+      lastFrame: 140
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Armature|TauntEnd
+      takeName: Armature|TauntEnd
+      internalID: -7373835100509487439
+      firstFrame: 0
+      lastFrame: 144
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Armature|TauntLoop
+      takeName: Armature|TauntLoop
+      internalID: -1791943967761127107
+      firstFrame: 0
+      lastFrame: 160
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
       loopBlend: 0
       loopBlendOrientation: 0
       loopBlendPositionY: 0

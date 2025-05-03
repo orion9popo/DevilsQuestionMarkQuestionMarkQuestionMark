@@ -23,5 +23,8 @@ public class GUIreference : MonoBehaviour
         Animator animator = player.GetComponent<Animator>();
         animator.SetTrigger("Sit");
     }
+    public void death(){
+        SceneManager.LoadScene("Death");
+    }
 
 }
