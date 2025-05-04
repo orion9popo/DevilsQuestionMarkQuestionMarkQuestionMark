@@ -17,6 +17,19 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
+enum states
+{
+    idle,
+    running,
+    attacking,
+    dying
+}
+enum attackStates
+{
+    forward,
+    back,
+    still
+}
 
 public class PlayerController : MonoBehaviour
 {
@@ -36,11 +49,11 @@ public class PlayerController : MonoBehaviour
     private float y;
     private Vector2 input = new Vector2();
     private Vector3 move = new Vector3();
-    private Vector3 targetDir = new Vector3();
+    private Vector3 targetDirection = new Vector3();
     private InputAction inputMove;
     private bool lockedIn, isItHighTime = false, isStinger = false, isAirborn, isHelmBringer = false;
     private Transform lockTarget;
-    private int swordProgression = 0;
+    private int attackProgression = 0;
     private Animator animator;
     private states state = states.idle;
     private attackStates dirState = attackStates.still;
@@ -48,26 +61,12 @@ public class PlayerController : MonoBehaviour
     private float highTime = 0;
     private float dirValueY = 0, dirValueX = 0, oldDirM = 0, WishVertical = 0;
     private Vector2 oldDir = Vector2.zero;
-
-    enum states
-    {
-        idle,
-        running,
-        attacking,
-        dying
-    }
-    enum attackStates
-    {
-        forward,
-        back,
-        still
-    }
     Dictionary<Tuple<attackStates, string, bool>, Delegate> attackDictionary = new Dictionary<Tuple<attackStates, string, bool>, Delegate>();
 
     // attack delagate pointers (used for attack dictionary)
 
-    private delegate void BasicAttackDelegate();
-    private delegate void AirAttackDelegate();
+    private delegate void SwordBasicAttackDelegate();
+    private delegate void SwordRaveDelegate();
     private delegate void StingerDelegate();
     private delegate void RollingActionDelegate();
     private delegate void HelmBringerDelegate();
@@ -76,33 +75,40 @@ public class PlayerController : MonoBehaviour
     private delegate void RollingThunderDelegate();
     private delegate void TauntDelegate();
     private delegate void AirRollingThunderDelegate();
+    private delegate void GauntletBasicAttackDelegate();
+    private delegate void GauntletRaveDelegate();
+    private delegate void SpitDelegate();
+    private delegate void TumultuousEarthDelegate();
+    private delegate void FreeReignDelegate();
+    private delegate void UpperCutDelegate();
 
     // Attacks
-    private void BasicAttack()
+    private void SwordBasicAttack()
     {
         if ((lockTarget.position - transform.position).magnitude > 2)
             move = transform.forward * 2;
-        if (timeSinceLastSwing > 1) swordProgression = 0;
+        if (timeSinceLastSwing > 1) attackProgression = 0;
         timeSinceLastSwing = 0;
         launchAttack(hitboxes[0], transform.position + transform.forward * 2, 10, transform.forward * 150);
-        animator.SetInteger("SwordProgression", swordProgression);
-        if (swordProgression < 2) swordProgression += 1;
-        else swordProgression = 0;
+        animator.SetInteger("attackProgression", attackProgression);
+        if (attackProgression < 2) attackProgression += 1;
+        else attackProgression = 0;
         StartCoroutine(M1coroutine(0.33f));
     }
-    private void AirAttack()
+    private void SwordRave()
     {
         move *= 0.5f;
-        rigidbody.velocity += Vector3.up*8;
-        if (timeSinceLastSwing > 1) swordProgression = 0;
+        rigidbody.velocity += Vector3.up * 8;
+        if (timeSinceLastSwing > 1) attackProgression = 0;
         timeSinceLastSwing = 0;
-        animator.SetInteger("SwordProgression", swordProgression);
-        if (swordProgression < 2) swordProgression += 1;
-        else{ 
-            swordProgression = 0;
-            rigidbody.velocity += Vector3.up*16;
+        animator.SetInteger("attackProgression", attackProgression);
+        if (attackProgression < 2) attackProgression += 1;
+        else
+        {
+            attackProgression = 0;
+            rigidbody.velocity += Vector3.up * 16;
             StartCoroutine(M1coroutine(0.7f));
-            StartCoroutine(airAttack3Supplement());
+            StartCoroutine(SwordRave3Supplement());
             return;
         }
         launchAttack(hitboxes[0], transform.position + transform.forward * 2, 10, Vector3.zero);
@@ -110,7 +116,7 @@ public class PlayerController : MonoBehaviour
     }
     private void Stinger()
     {
-        move = 15 * targetDir;
+        move = 15 * targetDirection;
         launchAttack(hitboxes[3], transform.position + transform.forward * 5, 10, transform.forward * 400);
         StartCoroutine(M1coroutine(0.5f));
         StartCoroutine(StingerSupplement());
@@ -118,7 +124,7 @@ public class PlayerController : MonoBehaviour
     private void RisingStrike()
     {
         move = Vector3.zero;
-        swordProgression = 0;
+        attackProgression = 0;
         launchAttack(hitboxes[2], transform.position + transform.forward * 2 + Vector3.up * 1, 10, Vector3.up * 300);
         StartCoroutine(RisingStrikeSupplement());
     }
@@ -141,9 +147,34 @@ public class PlayerController : MonoBehaviour
     }
     private void RollingThunder()
     {
-        
+
     }
-    private void AirRollingThunder(){
+    private void AirRollingThunder()
+    {
+
+    }
+    private void GauntletBasicAttack()
+    {
+
+    }
+    private void GauntletRave()
+    {
+
+    }
+    private void Spit()
+    {
+
+    }
+    private void TumultuousEarth()
+    {
+
+    }
+    private void FreeReign()
+    {
+
+    }
+    private void UpperCut()
+    {
 
     }
     void Start()
@@ -151,8 +182,8 @@ public class PlayerController : MonoBehaviour
         rigidbody = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
         lockTarget = transform;
-        BasicAttackDelegate BAD = new BasicAttackDelegate(BasicAttack);
-        AirAttackDelegate AAD = new AirAttackDelegate(AirAttack);
+        SwordBasicAttackDelegate BAD = new SwordBasicAttackDelegate(SwordBasicAttack);
+        SwordRaveDelegate AAD = new SwordRaveDelegate(SwordRave);
         StingerDelegate SD = new StingerDelegate(Stinger);
         RollingActionDelegate RAD = new RollingActionDelegate(RollingAction);
         SawDelegate SaD = new SawDelegate(Saw);
@@ -174,17 +205,17 @@ public class PlayerController : MonoBehaviour
         attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack2", false), HBD);
     }
 
-    
+
 
     // Movement
     void Update()
     {
-        if(state == states.dying) return;
+        if (state == states.dying) return;
         input = inputMove.ReadValue<Vector2>();
         timeSinceLastSwing += Time.deltaTime;
         if (isItHighTime && playerInput.Player.Attack1.IsPressed()) highTime += Time.deltaTime;
-        if(lockTarget == null) lockTarget = transform;
-        targetDir = (lockTarget.position - transform.position).normalized;
+        if (lockTarget == null) lockTarget = transform;
+        targetDirection = (lockTarget.position - transform.position).normalized;
         switch (state)
         {
             case states.idle:
@@ -205,7 +236,7 @@ public class PlayerController : MonoBehaviour
                 break;
 
             case states.running:
-                if(!isAirborn) VFX[2].gameObject.SetActive(true);
+                if (!isAirborn) VFX[2].gameObject.SetActive(true);
                 float targetAngle = Mathf.Atan2(move.x, move.z) * Mathf.Rad2Deg;
                 float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
                 move = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
@@ -219,8 +250,8 @@ public class PlayerController : MonoBehaviour
 
                 transform.rotation = Quaternion.Euler(0f, angle, 0f);
                 Vector3 Mmove = new Vector3(cam.transform.forward.x, 0, cam.transform.forward.z).normalized;
-                move = (Mmove* input.y - Vector3.Cross(Mmove, cam.transform.up) * input.x).normalized;
-                WishVertical = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, new Vector3(targetDir.x,0, targetDir.z).normalized);
+                move = (Mmove * input.y - Vector3.Cross(Mmove, cam.transform.up) * input.x).normalized;
+                WishVertical = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, new Vector3(targetDirection.x, 0, targetDirection.z).normalized);
                 if (lockedIn && dirState == attackStates.back) move *= speed * 0.5f;
                 else move *= speed;
 
@@ -233,17 +264,17 @@ public class PlayerController : MonoBehaviour
             if (isStinger == false)
                 transform.LookAt(new Vector3(lockTarget.position.x, transform.position.y, lockTarget.position.z));
             cam.transform.position += (transform.position + (10 - (lockTarget.position - transform.position).magnitude * 0.3f) * Vector3.Cross(transform.forward, transform.up) + Vector3.up * 2 - cam.transform.position) * 0.01f;
-            dirValueY = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, targetDir);
-            dirValueX = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, Vector3.Cross(targetDir, transform.up));
+            dirValueY = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, targetDirection);
+            dirValueX = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, Vector3.Cross(targetDirection, transform.up));
             oldDir.y += (dirValueY - oldDir.y) * 0.1f;
             oldDir.x += (dirValueX - oldDir.x) * 0.1f;
-            if(state != states.attacking) animator.SetFloat("Vertical", oldDir.y);
+            if (state != states.attacking) animator.SetFloat("Vertical", oldDir.y);
             else animator.SetFloat("Vertical", 0);
             animator.SetFloat("Horizontal", oldDir.x);
             animator.SetFloat("WishVertical", WishVertical);
             if (WishVertical > 0.707f) dirState = attackStates.forward;
             else if (WishVertical < -0.707f) dirState = attackStates.back;
-            else dirState = attackStates.still; 
+            else dirState = attackStates.still;
         }
         else
         {
@@ -261,12 +292,14 @@ public class PlayerController : MonoBehaviour
             animator.SetFloat("WishVertical", 0);
         }
         animator.SetBool("Grounded", IsGrounded());
-        if(rigidbody.velocity.y < 0 && !IsGrounded()) {
+        if (rigidbody.velocity.y < 0 && !IsGrounded())
+        {
             animator.SetBool("Fall", true);
         }
         else animator.SetBool("Fall", false);
-        if(isAirborn && IsGrounded()){
-            swordProgression = 0;
+        if (isAirborn && IsGrounded())
+        {
+            attackProgression = 0;
             StartCoroutine(flicker("Land"));
         }
         isAirborn = !IsGrounded();
@@ -312,9 +345,11 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(M1coroutine(2));
         StartCoroutine(flicker("Taunt"));
     }
-    private void compensateForWalls(Vector3 start, Vector3 to){
+    private void compensateForWalls(Vector3 start, Vector3 to)
+    {
         RaycastHit hit;
-        if(Physics.Raycast(start, (to-start).normalized, out hit, 11.5f, 1 <<7)){
+        if (Physics.Raycast(start, (to - start).normalized, out hit, 11.5f, 1 << 7))
+        {
             cam.transform.position = hit.point;
         }
     }
@@ -330,7 +365,7 @@ public class PlayerController : MonoBehaviour
 
     private void Lock(InputAction.CallbackContext context)
     {
-        if(state == states.dying) return;
+        if (state == states.dying) return;
         if (lockedIn)
         {
             lockTarget = transform;
@@ -369,38 +404,45 @@ public class PlayerController : MonoBehaviour
         if (IsGrounded() && state != states.dying)
         {
             StartCoroutine(flicker("Jump"));
-            swordProgression = 0;
+            attackProgression = 0;
             state = states.attacking;
             StartCoroutine(M1coroutine(0.2f));
-            if(WishVertical > -0.706) rigidbody.velocity = new Vector3(rigidbody.velocity.x, 10000  , rigidbody.velocity.z);
+            if (WishVertical > -0.706) rigidbody.velocity = new Vector3(rigidbody.velocity.x, 10000, rigidbody.velocity.z);
             else move = (lockTarget.position - transform.position).normalized * -10;
             StartCoroutine(jumpVFXm());
         }
     }
-    public void death(){
+    public void death()
+    {
         SceneManager.LoadScene("Death");
     }
-    public void startDeath(){
+    public void startDeath()
+    {
         gameObject.tag = "Dying";
         state = states.dying;
     }
 
     // helper functions
 
-    private bool IsGrounded(){
+    private bool IsGrounded()
+    {
         return Physics.Raycast(transform.position, Vector3.down, 2f);
     }
 
-    public void SwordVFX(){
+    public void SwordVFX()
+    {
         StartCoroutine(SwordVFXm());
     }
-    public void sawSwordVFX(){
+    public void sawSwordVFX()
+    {
         StartCoroutine(sawSwordVFXm());
     }
-    public void HelmBringerLandAnimEvent(){
+    public void HelmBringerLandAnimEvent()
+    {
         StartCoroutine(IHATEMAKINGIENUMERATORS());
     }
-    private IEnumerator IHATEMAKINGIENUMERATORS(){
+    private IEnumerator IHATEMAKINGIENUMERATORS()
+    {
         yield return new WaitForSeconds(0.3f);
         animator.SetBool("IsHelmBringer", false);
         state = states.idle;
@@ -418,17 +460,19 @@ public class PlayerController : MonoBehaviour
         VFX[0].transform.SetParent(null);
         VFX[0].gameObject.SetActive(false);
     }
-    private IEnumerator jumpVFXm(){
+    private IEnumerator jumpVFXm()
+    {
         VFX[1].gameObject.SetActive(true);
         VFX[1].transform.position = transform.position - Vector3.up * 1.2f;
         yield return new WaitForSeconds(0.5f);
         VFX[1].gameObject.SetActive(false);
     }
 
-    private IEnumerator SwordVFXm(){
+    private IEnumerator SwordVFXm()
+    {
         VFX[0].gameObject.SetActive(true);
-        Vector3 pos = transform.position+ Vector3.up + transform.forward;
-        Quaternion rot = handleBone.transform.rotation ;
+        Vector3 pos = transform.position + Vector3.up + transform.forward;
+        Quaternion rot = handleBone.transform.rotation;
         VFX[0].transform.position = pos;
         VFX[0].transform.rotation = rot;
         yield return new WaitForSeconds(0.3f);
@@ -448,21 +492,24 @@ public class PlayerController : MonoBehaviour
             if (hurtBox != null)
             {
                 hurtBox.TakeKnockback(knockback);
-                if (hurtBox.TakeDamage(damage) && col.transform == lockTarget) { 
+                if (hurtBox.TakeDamage(damage) && col.transform == lockTarget)
+                {
                     lockedIn = false;
                     lockTarget.tag = "Dying";
                     StartCoroutine(delaytag());
-                 }
+                }
                 didHit = true;
             }
         }
         return didHit;
     }
-    private IEnumerator delaytag(){
+    private IEnumerator delaytag()
+    {
         yield return new WaitForSeconds(0.1f);
         Lock(new InputAction.CallbackContext());
     }
-    private IEnumerator delayAirborne(){
+    private IEnumerator delayAirborne()
+    {
         yield return new WaitForEndOfFrame();
         isAirborn = true;
     }
@@ -473,7 +520,8 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(0.1f);
         animator.ResetTrigger(trigger);
     }
-    private IEnumerator HelmBringerSupplement(){
+    private IEnumerator HelmBringerSupplement()
+    {
         yield return new WaitForSeconds(0.16666f);
         launchAttack(hitboxes[2], transform.position + transform.forward * 2 + Vector3.down * 3, 15, -Vector3.up * 350 + transform.forward * 150);
         rigidbody.velocity = new Vector3(rigidbody.velocity.x, -20, rigidbody.velocity.z);
@@ -521,7 +569,8 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(M1coroutine(0.5f));
         highTime = 0;
     }
-    private IEnumerator airAttack3Supplement(){
+    private IEnumerator SwordRave3Supplement()
+    {
         yield return new WaitForSeconds(0.3333f);
         launchAttack(hitboxes[0], transform.position + transform.forward * 2, 10, Vector3.zero);
     }
@@ -537,3 +586,5 @@ public class PlayerController : MonoBehaviour
         move = Vector3.zero;
     }
 }
+
+
