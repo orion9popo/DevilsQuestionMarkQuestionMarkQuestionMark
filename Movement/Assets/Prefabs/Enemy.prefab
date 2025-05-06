@@ -372,9 +372,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e018c3416a713b47a3b7bdc7e952f9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 3
-  thePack: 1
-  attackSpeed: 1
+  speed: 2
+  thePack: 0
+  attackSpeed: 1.5
   grabRange: 2
   player: {fileID: 0}
   attackRange: 5
@@ -420,7 +420,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 80
   m_CollisionDetection: 0
 --- !u!136 &6137469510985942969
 CapsuleCollider:

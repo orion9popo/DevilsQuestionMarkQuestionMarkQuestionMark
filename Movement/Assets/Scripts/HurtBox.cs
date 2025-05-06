@@ -27,7 +27,7 @@ public class HurtBox : MonoBehaviour
         if(gameObject.tag == "TheMachine"){
             Instantiate(enemy, transform.position - transform.forward * 3, quaternion.identity);
             EnemyAI enemyAI = enemy.GetComponent<EnemyAI>();
-            enemyAI.player = GameObject.Find("datedevilhunter").transform;
+            enemyAI.player = GameObject.FindWithTag("Player").transform;
             enemyAI.hitbox = GameObject.Find("M1Hitbox").GetComponent<Collider>();
             enemyAI.thePack = false;
         }
@@ -42,10 +42,11 @@ public class HurtBox : MonoBehaviour
     }
     public void TakeKnockback(Vector3 knockback){
         if(rigidbody)
-            rigidbody.AddForce(knockback);
+            rigidbody.AddForce(knockback,ForceMode.Acceleration);
         Debug.Log("doing something");
     }
     public void Halt(){
+        rigidbody.velocity = Vector3.zero;
         rigidbody.useGravity = false;
     }
     public void Resume(){

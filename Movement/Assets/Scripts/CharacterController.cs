@@ -43,17 +43,16 @@ public class PlayerController : MonoBehaviour
     public GameObject handleBone;
     public ParticleSystem[] VFX;
     new Rigidbody rigidbody;
+    HurtBox hurtBox;
     private float turnSmoothVelocity;
-    private Vector3 rotate;
-    private float x;
-    private float y;
+    private float x, y;
     private Vector2 input = new Vector2();
-    private Vector3 move = new Vector3();
+    private Vector3 move = new Vector3(), rotate;
     private Vector3 targetDirection = new Vector3();
     private InputAction inputMove;
-    private bool lockedIn, isItHighTime = false, isStinger = false, isAirborn, isHelmBringer = false;
+    private bool lockedIn, isItHighTime = false, IsNotLooking = false, isAirborn, isHelmBringer = false;
     private Transform lockTarget;
-    private int attackProgression = 0;
+    private int attackProgression = 0, equippedWeapon = 0;
     private Animator animator;
     private states state = states.idle;
     private attackStates dirState = attackStates.still;
@@ -61,7 +60,8 @@ public class PlayerController : MonoBehaviour
     private float highTime = 0;
     private float dirValueY = 0, dirValueX = 0, oldDirM = 0, WishVertical = 0;
     private Vector2 oldDir = Vector2.zero;
-    Dictionary<Tuple<attackStates, string, bool>, Delegate> attackDictionary = new Dictionary<Tuple<attackStates, string, bool>, Delegate>();
+    
+    Dictionary<Tuple<attackStates, string, bool>, Delegate>[] attackDictionary = new Dictionary<Tuple<attackStates, string, bool>, Delegate>[2];
 
     // attack delagate pointers (used for attack dictionary)
 
@@ -81,51 +81,53 @@ public class PlayerController : MonoBehaviour
     private delegate void TumultuousEarthDelegate();
     private delegate void FreeReignDelegate();
     private delegate void UpperCutDelegate();
+    private delegate void BlastDelegate();
 
     // Attacks
     private void SwordBasicAttack()
     {
         if ((lockTarget.position - transform.position).magnitude > 2)
-            move = transform.forward * 2;
+            move = transform.forward;
         if (timeSinceLastSwing > 1) attackProgression = 0;
         timeSinceLastSwing = 0;
         launchAttack(hitboxes[0], transform.position + transform.forward * 2, 10, transform.forward * 150);
-        animator.SetInteger("attackProgression", attackProgression);
+        animator.SetInteger("AttackProgression", attackProgression);
         if (attackProgression < 2) attackProgression += 1;
         else attackProgression = 0;
-        StartCoroutine(M1coroutine(0.33f));
+        StartCoroutine(CoolDownCoroutine(0.33f));
+        Debug.Log(IsNotLooking);
     }
     private void SwordRave()
     {
         move *= 0.5f;
-        rigidbody.velocity += Vector3.up * 8;
+        rigidbody.velocity += Vector3.up * 3;
         if (timeSinceLastSwing > 1) attackProgression = 0;
         timeSinceLastSwing = 0;
-        animator.SetInteger("attackProgression", attackProgression);
+        animator.SetInteger("AttackProgression", attackProgression);
         if (attackProgression < 2) attackProgression += 1;
         else
         {
             attackProgression = 0;
-            rigidbody.velocity += Vector3.up * 16;
-            StartCoroutine(M1coroutine(0.7f));
+            rigidbody.velocity += Vector3.up * 4;
+            StartCoroutine(CoolDownCoroutine(0.7f));
             StartCoroutine(SwordRave3Supplement());
             return;
         }
         launchAttack(hitboxes[0], transform.position + transform.forward * 2, 10, Vector3.zero);
-        StartCoroutine(M1coroutine(0.33f));
+        StartCoroutine(CoolDownCoroutine(0.33f));
     }
     private void Stinger()
     {
-        move = 15 * targetDirection;
+        move = 5 * targetDirection;
         launchAttack(hitboxes[3], transform.position + transform.forward * 5, 10, transform.forward * 400);
-        StartCoroutine(M1coroutine(0.5f));
+        StartCoroutine(CoolDownCoroutine(0.5f));
         StartCoroutine(StingerSupplement());
     }
     private void RisingStrike()
     {
         move = Vector3.zero;
         attackProgression = 0;
-        launchAttack(hitboxes[2], transform.position + transform.forward * 2 + Vector3.up * 1, 10, Vector3.up * 300);
+        launchAttack(hitboxes[2], transform.position + transform.forward * 2 + Vector3.up * 1, 10, Vector3.up * 800);
         StartCoroutine(RisingStrikeSupplement());
     }
     private void RollingAction()
@@ -138,7 +140,7 @@ public class PlayerController : MonoBehaviour
         animator.SetBool("IsHelmBringer", true);
         state = states.attacking;
         move = Vector3.zero;
-        rigidbody.velocity = new Vector3(rigidbody.velocity.x, -8, rigidbody.velocity.z);
+        rigidbody.velocity = new Vector3(rigidbody.velocity.x, -10, rigidbody.velocity.z);
         StartCoroutine(HelmBringerSupplement());
     }
     private void Saw()
@@ -147,11 +149,12 @@ public class PlayerController : MonoBehaviour
     }
     private void RollingThunder()
     {
-
+        
     }
     private void AirRollingThunder()
     {
-
+        rigidbody.velocity = new Vector3(rigidbody.velocity.x, 10, rigidbody.velocity.z);
+        StartCoroutine(AirRollingThunderSupplement());
     }
     private void GauntletBasicAttack()
     {
@@ -177,11 +180,34 @@ public class PlayerController : MonoBehaviour
     {
 
     }
+    private void Blast(){
+
+    }
+     private void Taunt(InputAction.CallbackContext context)
+    {
+        state = states.attacking;
+        StartCoroutine(CoolDownCoroutine(2));
+        StartCoroutine(flicker("Taunt"));
+    }
+    private void switchWeapon(InputAction.CallbackContext context){
+        if(context.ReadValue<float>() == attackDictionary.Length-1)
+            equippedWeapon = equippedWeapon == 0 ? attackDictionary.Length-1 : equippedWeapon - 1;
+        else
+            equippedWeapon = equippedWeapon == attackDictionary.Length-1 ? 0 : equippedWeapon + 1;
+        Debug.Log(equippedWeapon);
+    }
     void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
+        hurtBox = GetComponent<HurtBox>();
         lockTarget = transform;
+
+        attackDictionary[0] = new();
+        attackDictionary[1] = new();
+
+        // Sword attacks
+
         SwordBasicAttackDelegate BAD = new SwordBasicAttackDelegate(SwordBasicAttack);
         SwordRaveDelegate AAD = new SwordRaveDelegate(SwordRave);
         StingerDelegate SD = new StingerDelegate(Stinger);
@@ -191,18 +217,40 @@ public class PlayerController : MonoBehaviour
         HelmBringerDelegate HBD = new HelmBringerDelegate(HelmBringer);
         RollingThunderDelegate RTD = new RollingThunderDelegate(RollingThunder);
         AirRollingThunderDelegate ARTD = new AirRollingThunderDelegate(AirRollingThunder);
-        attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.still, "Attack1", true), BAD);
-        attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.forward, "Attack1", false), AAD);
-        attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack1", false), AAD);
-        attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.still, "Attack1", false), AAD);
-        attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.forward, "Attack1", true), SD);
-        attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.forward, "Attack2", true), RTD);
-        attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack2", true), RAD);
-        attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.still, "Attack2", true), SaD);
-        attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack1", true), RSD);
-        attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.forward, "Attack2", false), ARTD);
-        attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.still, "Attack2", false), HBD);
-        attackDictionary.Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack2", false), HBD);
+        attackDictionary[0].Add(new Tuple<attackStates, string, bool>(attackStates.still, "Attack1", true), BAD);
+        attackDictionary[0].Add(new Tuple<attackStates, string, bool>(attackStates.forward, "Attack1", false), AAD);
+        attackDictionary[0].Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack1", false), AAD);
+        attackDictionary[0].Add(new Tuple<attackStates, string, bool>(attackStates.still, "Attack1", false), AAD);
+        attackDictionary[0].Add(new Tuple<attackStates, string, bool>(attackStates.forward, "Attack1", true), SD);
+        attackDictionary[0].Add(new Tuple<attackStates, string, bool>(attackStates.forward, "Attack2", true), RTD);
+        attackDictionary[0].Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack2", true), RAD);
+        attackDictionary[0].Add(new Tuple<attackStates, string, bool>(attackStates.still, "Attack2", true), SaD);
+        attackDictionary[0].Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack1", true), RSD);
+        attackDictionary[0].Add(new Tuple<attackStates, string, bool>(attackStates.forward, "Attack2", false), ARTD);
+        attackDictionary[0].Add(new Tuple<attackStates, string, bool>(attackStates.still, "Attack2", false), HBD);
+        attackDictionary[0].Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack2", false), HBD);
+
+        //Gauntlet attacks
+
+        GauntletBasicAttackDelegate GBAD = new(GauntletBasicAttack);
+        GauntletRaveDelegate GRD = new(GauntletRave);
+        SpitDelegate SpD = new(Spit);
+        TumultuousEarthDelegate TED= new(TumultuousEarth);
+        FreeReignDelegate FRD = new(FreeReign);
+        BlastDelegate BD = new(Blast);
+        UpperCutDelegate UCD = new(UpperCut);
+        attackDictionary[1].Add(new Tuple<attackStates, string, bool>(attackStates.still, "Attack1", true), GBAD);
+        attackDictionary[1].Add(new Tuple<attackStates, string, bool>(attackStates.still, "Attack1", false), GRD);
+        attackDictionary[1].Add(new Tuple<attackStates, string, bool>(attackStates.still, "Attack2", true), TED);
+        attackDictionary[1].Add(new Tuple<attackStates, string, bool>(attackStates.still, "Attack2", false), SpD);
+        attackDictionary[1].Add(new Tuple<attackStates, string, bool>(attackStates.forward, "Attack1", true), GBAD);
+        attackDictionary[1].Add(new Tuple<attackStates, string, bool>(attackStates.forward, "Attack1", false), FRD);
+        attackDictionary[1].Add(new Tuple<attackStates, string, bool>(attackStates.forward, "Attack2", true), TED);
+        attackDictionary[1].Add(new Tuple<attackStates, string, bool>(attackStates.forward, "Attack2", false), SpD);
+        attackDictionary[1].Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack1", true), UCD);
+        attackDictionary[1].Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack1", false), GRD);
+        attackDictionary[1].Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack2", true), BD);
+        attackDictionary[1].Add(new Tuple<attackStates, string, bool>(attackStates.back, "Attack2", false), SpD);
     }
 
 
@@ -243,7 +291,7 @@ public class PlayerController : MonoBehaviour
 
                 if (input.magnitude < 0.1)
                 {
-                    move = new Vector3(0, rigidbody.velocity.y, 0);
+                    move = new Vector3(0, 0, 0);
                     state = states.idle;
                     return;
                 }
@@ -261,7 +309,7 @@ public class PlayerController : MonoBehaviour
         if (lockedIn)
         {
             cam.transform.LookAt(lockTarget);
-            if (isStinger == false)
+            if (IsNotLooking == false)
                 transform.LookAt(new Vector3(lockTarget.position.x, transform.position.y, lockTarget.position.z));
             cam.transform.position += (transform.position + (10 - (lockTarget.position - transform.position).magnitude * 0.3f) * Vector3.Cross(transform.forward, transform.up) + Vector3.up * 2 - cam.transform.position) * 0.01f;
             dirValueY = Vector3.Dot(new Vector3(move.x, 0, move.z).normalized, targetDirection);
@@ -304,7 +352,10 @@ public class PlayerController : MonoBehaviour
         }
         isAirborn = !IsGrounded();
         compensateForWalls(transform.position, cam.transform.position);
-        rigidbody.velocity = move;
+    }
+    public void FixedUpdate()
+    {
+        rigidbody.MovePosition(transform.position + move * speed * Time.fixedDeltaTime);
     }
 
 
@@ -320,6 +371,7 @@ public class PlayerController : MonoBehaviour
         playerInput.Player.LockOn.performed += Lock;
         playerInput.Player.Jump.performed += Jump;
         playerInput.Player.Taunt.performed += Taunt;
+        playerInput.Player.WeaponSwitch.performed += switchWeapon;
         //playerInput.Player.MouseWheel.performed += mouseScroll;
         playerInput.Enable();
     }
@@ -339,12 +391,7 @@ public class PlayerController : MonoBehaviour
         cam.transform.position += cam.transform.forward * scroll;
     }*/
 
-    private void Taunt(InputAction.CallbackContext context)
-    {
-        state = states.attacking;
-        StartCoroutine(M1coroutine(2));
-        StartCoroutine(flicker("Taunt"));
-    }
+   
     private void compensateForWalls(Vector3 start, Vector3 to)
     {
         RaycastHit hit;
@@ -360,7 +407,8 @@ public class PlayerController : MonoBehaviour
         if (context.action.name == "Attack2" && !lockedIn) return;
         state = states.attacking;
         StartCoroutine(flicker(context.action.name));
-        attackDictionary[new Tuple<attackStates, String, bool>(dirState, context.action.name, IsGrounded())]?.DynamicInvoke();
+        attackDictionary[equippedWeapon][new Tuple<attackStates, String, bool>(dirState, context.action.name, IsGrounded())]?.DynamicInvoke();
+        Debug.Log(attackDictionary[equippedWeapon][new Tuple<attackStates, String, bool>(dirState, context.action.name, IsGrounded())]);
     }
 
     private void Lock(InputAction.CallbackContext context)
@@ -406,9 +454,9 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(flicker("Jump"));
             attackProgression = 0;
             state = states.attacking;
-            StartCoroutine(M1coroutine(0.2f));
-            if (WishVertical > -0.706) rigidbody.velocity = new Vector3(rigidbody.velocity.x, 10000, rigidbody.velocity.z);
-            else move = (lockTarget.position - transform.position).normalized * -10;
+            StartCoroutine(CoolDownCoroutine(0.2f));
+            if (WishVertical > -0.706) rigidbody.velocity = new Vector3(rigidbody.velocity.x,math.sqrt( Physics.gravity.magnitude * 3 * jumpHeight), rigidbody.velocity.z);
+            else move =  targetDirection * -4;
             StartCoroutine(jumpVFXm());
         }
     }
@@ -426,7 +474,7 @@ public class PlayerController : MonoBehaviour
 
     private bool IsGrounded()
     {
-        return Physics.Raycast(transform.position, Vector3.down, 2f);
+        return Physics.Raycast(transform.position, Vector3.down, 1.38f);
     }
 
     public void SwordVFX()
@@ -439,16 +487,15 @@ public class PlayerController : MonoBehaviour
     }
     public void HelmBringerLandAnimEvent()
     {
-        StartCoroutine(IHATEMAKINGIENUMERATORS());
-    }
-    private IEnumerator IHATEMAKINGIENUMERATORS()
-    {
-        yield return new WaitForSeconds(0.3f);
-        animator.SetBool("IsHelmBringer", false);
-        state = states.idle;
         isHelmBringer = false;
+        animator.SetBool("IsHelmBringer", false);
+        state = states.attacking;
+        StartCoroutine(IHATEMAKINGIENUMBERATORS());
     }
-
+    private IEnumerator IHATEMAKINGIENUMBERATORS(){
+        yield return new WaitForSeconds(0.2f);
+        state = states.idle;
+    }
     private IEnumerator sawSwordVFXm()
     {
         VFX[0].gameObject.SetActive(true);
@@ -528,9 +575,9 @@ public class PlayerController : MonoBehaviour
     }
     private IEnumerator StingerSupplement()
     {
-        isStinger = true;
+        IsNotLooking = true;
         yield return new WaitForSeconds(0.5f);
-        isStinger = false;
+        IsNotLooking = false;
     }
     private IEnumerator RollingActionSupplement(Vector3 pos)
     {
@@ -538,7 +585,7 @@ public class PlayerController : MonoBehaviour
         for (int i = 0; i < 5; i++)
         {
             yield return new WaitForSeconds(0.1f);
-            launchAttack(hitboxes[1], pos, 5, Vector3.up * 150);
+            launchAttack(hitboxes[1], pos, 5, Vector3.up * 400);
         }
         state = states.idle;
     }
@@ -548,7 +595,7 @@ public class PlayerController : MonoBehaviour
         for (int i = 0; i < 5; i++)
         {
             yield return new WaitForSeconds(0.125f);
-            launchAttack(hitboxes[0], transform.position + transform.forward, 5, Vector3.up * 150);
+            launchAttack(hitboxes[0], transform.position + transform.forward, 5, Vector3.up * 400);
         }
         state = states.idle;
     }
@@ -559,14 +606,14 @@ public class PlayerController : MonoBehaviour
         isItHighTime = false;
         if (highTime > 0.2f)
         {
-            rigidbody.velocity = new Vector3(rigidbody.velocity.x, -16, rigidbody.velocity.z);
+            rigidbody.velocity = new Vector3(rigidbody.velocity.x, math.sqrt(Physics.gravity.magnitude * 7), rigidbody.velocity.z);
             highTime = 0;
-            StartCoroutine(M1coroutine(0.133f));
+            StartCoroutine(CoolDownCoroutine(0.133f));
             yield return new WaitForSeconds(0.3f);
             StartCoroutine(delayAirborne());
             yield break;
         }
-        StartCoroutine(M1coroutine(0.5f));
+        StartCoroutine(CoolDownCoroutine(0.5f));
         highTime = 0;
     }
     private IEnumerator SwordRave3Supplement()
@@ -574,17 +621,31 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(0.3333f);
         launchAttack(hitboxes[0], transform.position + transform.forward * 2, 10, Vector3.zero);
     }
+    private IEnumerator AirRollingThunderSupplement(){
+        IsNotLooking = true;
+        while(!IsGrounded()){
+            yield return new WaitForSeconds(0.1f);
+            Debug.Log(IsNotLooking);
+            launchAttack(hitboxes[1], transform.position,5, transform.forward * 3 + Vector3.up * 400);
+        }
+        Debug.Log("done");
+        rigidbody.velocity = Vector3.zero;
+        move = Vector3.zero;
+        state = states.idle;
+        IsNotLooking = false;
+    }
     private IEnumerator DestoryHitbox(GameObject hitbox)
     {
         yield return new WaitForSeconds(0.2f);
         Destroy(hitbox);
     }
-    private IEnumerator M1coroutine(float time)
+    private IEnumerator CoolDownCoroutine(float time)
     {
         yield return new WaitForSeconds(time);
         state = states.idle;
         move = Vector3.zero;
     }
+    
 }
 
 

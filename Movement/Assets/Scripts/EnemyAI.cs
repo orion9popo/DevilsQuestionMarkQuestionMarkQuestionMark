@@ -44,6 +44,10 @@ public class EnemyAI : MonoBehaviour
         rigidbody = GetComponent<Rigidbody>();
         boxCollider = GetComponent<BoxCollider>();
         enemyCount = GameObject.Find("EnemyCount");
+        if(player == null)
+            player = GameObject.FindGameObjectWithTag("Player").transform;
+        if(hitbox == null)
+            hitbox = GameObject.Find("M1Hitbox").GetComponent<Collider>();
     }
 
     void Update()
@@ -53,8 +57,6 @@ public class EnemyAI : MonoBehaviour
             return; 
         }
         if (isDamaged || isDying) { transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z)); return; }
-        rigidbody.velocity = new Vector3(0,rigidbody.velocity.y, 0);
-        rigidbody.angularVelocity = new Vector3(0,rigidbody.angularVelocity.y, 0);
         switch (state)
         {
             case States.Look:
@@ -73,7 +75,7 @@ public class EnemyAI : MonoBehaviour
     {
         animator.SetBool("IsWalking", true);
         goTo = player.position;
-        this.transform.position = Vector3.MoveTowards(this.transform.position, goTo, speed * Time.deltaTime);
+        rigidbody.MovePosition(transform.position + (player.position - transform.position) * speed  * Time.deltaTime);
         if ((transform.position - player.position).magnitude < attackRange)
         {
             state = States.Look;
@@ -90,7 +92,7 @@ public class EnemyAI : MonoBehaviour
             return;
         }
         animator.SetBool("IsWalking", true);
-        goTo = -Vector3.Cross(transform.position - player.position, transform.up) + transform.position;
+        goTo = -Vector3.Cross(transform.position - player.position, transform.up) + transform.position + (player.position - transform.position) * 0.3f;
         transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z));
         if ((transform.position - player.position).magnitude < grabRange && !cooldown)
         {
@@ -105,7 +107,7 @@ public class EnemyAI : MonoBehaviour
         {
             goTo = player.position;
         }
-        this.transform.position = Vector3.MoveTowards(this.transform.position, goTo, attackSpeed * Time.deltaTime);
+        rigidbody.MovePosition(transform.position + (transform.position - player.position) * attackSpeed * Time.deltaTime);
 
         /*GameObject projectile = Instantiate(bullet, transform.position, Quaternion.identity);
         Rigidbody rb = projectile.GetComponent<Rigidbody>();
