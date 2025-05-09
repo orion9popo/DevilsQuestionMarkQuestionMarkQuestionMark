@@ -168,7 +168,7 @@ ModelImporter:
       - time: 0.5451467
         functionName: SpawnHitbox
         data: 
-        objectReferenceParameter: {instanceID: 0}
+        objectReferenceParameter: {fileID: 11500000, guid: 8e018c3416a713b47a3b7bdc7e952f9a, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0

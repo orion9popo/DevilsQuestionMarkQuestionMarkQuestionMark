@@ -116,15 +116,19 @@ public class EnemyAI : MonoBehaviour
         StartCoroutine(waitCooldown());*/
 
     }
+    public void SpawnHitbox(){
+        launchAttack(hitbox,transform.forward * 2);
+    }
     private bool launchAttack(Collider other, Vector3 pos)
     {
         Collider[] cols = Physics.OverlapBox(pos, other.bounds.extents, transform.rotation);
         bool didHit = false;
         foreach (Collider col in cols)
         {
-            if (col.tag == tag)
+            if (col.tag == "Player")
                 continue;
-
+            
+            Debug.Log("got player");
             HurtBox hurtBox = col.transform.GetComponent<HurtBox>();
             if (hurtBox != null)
             {
@@ -133,11 +137,6 @@ public class EnemyAI : MonoBehaviour
             }
         }
         return didHit;
-    }
-
-    void SpawnHitbox()
-    {
-        launchAttack(hitbox, transform.position + transform.forward);
     }
     void Attack()
     {

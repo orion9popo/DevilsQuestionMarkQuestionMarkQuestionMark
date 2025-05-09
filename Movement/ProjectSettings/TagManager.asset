@@ -8,6 +8,7 @@ TagManager:
   - Dying
   - TheMachine
   - Bounds
+  - Weapon
   layers:
   - Default
   - TransparentFX
