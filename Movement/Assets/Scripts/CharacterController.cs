@@ -63,8 +63,8 @@ public class PlayerController : MonoBehaviour
     private float highTime = 0;
     private float dirValueY = 0, dirValueX = 0, oldDirM = 0, WishVertical = 0;
     private Vector2 oldDir = Vector2.zero;
-    private GameObject[] weapons = new GameObject[2]; 
-    
+    private GameObject[] weapons = new GameObject[2];
+
     Dictionary<Tuple<attackStates, string, bool>, Delegate>[] attackDictionary = new Dictionary<Tuple<attackStates, string, bool>, Delegate>[2];
 
     // attack delagate pointers (used for attack dictionary)
@@ -110,7 +110,7 @@ public class PlayerController : MonoBehaviour
         else
         {
             attackProgression = 0;
-            
+
             StartCoroutine(CoolDownCoroutine(0.7f));
             StartCoroutine(SwordRave3Supplement());
             return;
@@ -206,23 +206,25 @@ public class PlayerController : MonoBehaviour
     {
         StartCoroutine(UpperCutSupplement());
     }
-    private void Blast(){
+    private void Blast()
+    {
 
     }
-     private void Taunt(InputAction.CallbackContext context)
+    private void Taunt(InputAction.CallbackContext context)
     {
         state = states.attacking;
         StartCoroutine(CoolDownCoroutine(2));
         StartCoroutine(flicker("Taunt"));
     }
-    private void switchWeapon(InputAction.CallbackContext context){
+    private void switchWeapon(InputAction.CallbackContext context)
+    {
         attackProgression = 0;
-        animator.SetInteger("AttackProgression", attackProgression); 
+        animator.SetInteger("AttackProgression", attackProgression);
         hideWeapon(equippedWeapon);
-        if(context.ReadValue<float>() == attackDictionary.Length-1)
-            equippedWeapon = equippedWeapon == 0 ? attackDictionary.Length-1 : equippedWeapon - 1;
+        if (context.ReadValue<float>() == attackDictionary.Length - 1)
+            equippedWeapon = equippedWeapon == 0 ? attackDictionary.Length - 1 : equippedWeapon - 1;
         else
-            equippedWeapon = equippedWeapon == attackDictionary.Length-1 ? 0 : equippedWeapon + 1;
+            equippedWeapon = equippedWeapon == attackDictionary.Length - 1 ? 0 : equippedWeapon + 1;
         animator.runtimeAnimatorController = animatorControllers[equippedWeapon];
         showWeapon(equippedWeapon);
 
@@ -239,6 +241,8 @@ public class PlayerController : MonoBehaviour
 
         weapons[0] = GameObject.Find("WarriorSword");
         weapons[1] = GameObject.Find("Gauntlet");
+
+        Cursor.lockState = CursorLockMode.Locked;
 
         // Sword attacks
 
@@ -269,7 +273,7 @@ public class PlayerController : MonoBehaviour
         GauntletBasicAttackDelegate GBAD = new(GauntletBasicAttack);
         GauntletRaveDelegate GRD = new(GauntletRave);
         SpitDelegate SpD = new(Spit);
-        TumultuousEarthDelegate TED= new(TumultuousEarth);
+        TumultuousEarthDelegate TED = new(TumultuousEarth);
         FreeReignDelegate FRD = new(FreeReign);
         BlastDelegate BD = new(Blast);
         UpperCutDelegate UCD = new(UpperCut);
@@ -303,8 +307,7 @@ public class PlayerController : MonoBehaviour
             case states.idle:
                 WishVertical = 0;
                 animator.SetFloat("WishVertical", WishVertical);
-                VFX[2].gameObject.SetActive(false);
-                //VFX[2].Play();
+                if (VFX[2].isPlaying) VFX[2].Stop();
                 if (input.magnitude > 0.1)
                 {
                     state = states.running;
@@ -318,7 +321,7 @@ public class PlayerController : MonoBehaviour
                 break;
 
             case states.running:
-                if (!isAirborn) VFX[2].gameObject.SetActive(true);
+                if (!isAirborn && !VFX[2].isPlaying) VFX[2].Play();
                 float targetAngle = Mathf.Atan2(move.x, move.z) * Mathf.Rad2Deg;
                 float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
                 move = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
@@ -360,20 +363,19 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            if (Input.GetMouseButton(1))
-            {
-                y = Input.GetAxis("Mouse X");
-                x = Input.GetAxis("Mouse Y");
-                rotate = new Vector3(x, y * sensitivity, 0);
-                cam.transform.eulerAngles = cam.transform.eulerAngles - rotate * 4;
-            }
             cam.transform.position = transform.position - 10 * cam.transform.forward + Vector3.up * 2;
             oldDirM += (input.magnitude - oldDirM) * 0.1f;
             animator.SetFloat("Horizontal", 0);
             animator.SetFloat("Vertical", oldDirM);
             animator.SetFloat("WishVertical", 0);
+            y = Input.GetAxis("Mouse X");
+            x = Input.GetAxis("Mouse Y");
+            rotate += new Vector3(x * sensitivity, -y * sensitivity, 0);
+            cam.transform.eulerAngles = rotate;
         }
+
         animator.SetBool("Grounded", IsGrounded());
+
         if (rigidbody.velocity.y < 0 && !IsGrounded())
         {
             animator.SetBool("Fall", true);
@@ -386,8 +388,10 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(flicker("Land"));
             StartCoroutine(landDelay());
         }
+        
         isAirborn = !IsGrounded();
         compensateForWalls(transform.position, cam.transform.position);
+
     }
     public void FixedUpdate()
     {
@@ -428,7 +432,7 @@ public class PlayerController : MonoBehaviour
         cam.transform.position += cam.transform.forward * scroll;
     }*/
 
-   
+
     private void compensateForWalls(Vector3 start, Vector3 to)
     {
         RaycastHit hit;
@@ -493,8 +497,8 @@ public class PlayerController : MonoBehaviour
             attackProgression = 0;
             state = states.attacking;
             StartCoroutine(CoolDownCoroutine(0.2f));
-            if (WishVertical > -0.706) rigidbody.velocity = new Vector3(rigidbody.velocity.x,math.sqrt( Physics.gravity.magnitude * 3 * jumpHeight), rigidbody.velocity.z);
-            else move =  targetDirection * -4;
+            if (WishVertical > -0.706) rigidbody.velocity = new Vector3(rigidbody.velocity.x, math.sqrt(Physics.gravity.magnitude * 3 * jumpHeight), rigidbody.velocity.z);
+            else move = targetDirection * -4;
             StartCoroutine(jumpVFXm());
         }
     }
@@ -510,10 +514,12 @@ public class PlayerController : MonoBehaviour
 
     // helper functions
 
-    private void hideWeapon(int index){
+    private void hideWeapon(int index)
+    {
         weapons[index].SetActive(false);
     }
-    private void showWeapon(int index){
+    private void showWeapon(int index)
+    {
         weapons[index].SetActive(true);
     }
 
@@ -530,7 +536,8 @@ public class PlayerController : MonoBehaviour
     {
         StartCoroutine(sawSwordVFXm());
     }
-    public void CrashVFX(){
+    public void CrashVFX()
+    {
         StartCoroutine(crashVFXm());
     }
     public void HelmBringerLandAnimEvent()
@@ -539,17 +546,20 @@ public class PlayerController : MonoBehaviour
         state = states.attacking;
         StartCoroutine(IHATEMAKINGIENUMBERATORS());
     }
-    private IEnumerator IHATEMAKINGIENUMBERATORS(){
+    private IEnumerator IHATEMAKINGIENUMBERATORS()
+    {
         yield return new WaitForSeconds(0.2f);
         state = states.idle;
     }
-    private IEnumerator landDelay(){
+    private IEnumerator landDelay()
+    {
         state = states.attacking;
         move = Vector3.zero;
         yield return new WaitForSeconds(0.2f);
         state = states.idle;
     }
-    private IEnumerator crashVFXm(){
+    private IEnumerator crashVFXm()
+    {
         VFX[3].gameObject.SetActive(true);
         yield return new WaitForSeconds(0.4f);
         VFX[3].gameObject.SetActive(false);
@@ -642,15 +652,17 @@ public class PlayerController : MonoBehaviour
         state = states.attacking;
         move = Vector3.zero;
         yield return new WaitForSeconds(0.5f);
-        GameObject spinningSword = Instantiate(weapons[0],transform.position,quaternion.identity);
-        spinningSword.transform.localScale = new Vector3(0.6f,0.6f,0.6f);
+        GameObject spinningSword = Instantiate(weapons[0], transform.position, quaternion.identity);
+        spinningSword.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
         hideWeapon(0);
         float theTimeBetween = 0;
         float thetimer = 0;
-        while((spinningSword.transform.position - transform.position).magnitude < 7 && thetimer < 3){
+        while ((spinningSword.transform.position - transform.position).magnitude < 7 && thetimer < 3)
+        {
             spinningSword.transform.position = math.lerp(spinningSword.transform.position, pos, Time.deltaTime * 3);
             spinningSword.transform.rotation = quaternion.RotateY(thetimer * 30);
-            if(theTimeBetween > 0.1){
+            if (theTimeBetween > 0.1)
+            {
                 theTimeBetween = 0;
                 launchAttack(hitboxes[1], spinningSword.transform.position, 5, Vector3.up * 400);
             }
@@ -694,34 +706,40 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(0.3333f);
         launchAttack(hitboxes[0], transform.position + transform.forward * 2, 10, Vector3.zero);
     }
-    private IEnumerator RollingThunderSupplement(){
+    private IEnumerator RollingThunderSupplement()
+    {
         IsNotLooking = true;
         yield return new WaitForSeconds(0.4f);
-        
-        
+
+
     }
-    private IEnumerator AirRollingThunderSupplement(){
+    private IEnumerator AirRollingThunderSupplement()
+    {
         IsNotLooking = true;
-        while(!IsGrounded()){
+        while (!IsGrounded())
+        {
             yield return new WaitForSeconds(0.1f);
-            launchAttack(hitboxes[1], transform.position,5, transform.forward * 3 + Vector3.up * 400);
+            launchAttack(hitboxes[1], transform.position, 5, transform.forward * 3 + Vector3.up * 400);
         }
         rigidbody.velocity = Vector3.zero;
         move = Vector3.zero;
         state = states.idle;
         IsNotLooking = false;
     }
-    private IEnumerator UpperCutSupplement(){
+    private IEnumerator UpperCutSupplement()
+    {
         state = states.attacking;
         rigidbody.velocity = Vector3.zero;
         move = Vector3.zero;
         int progession = 0;
         float timer = 0;
-        while(playerInput.Player.Attack1.IsPressed()){
+        while (playerInput.Player.Attack1.IsPressed())
+        {
             timer += Time.deltaTime;
-            if(timer > 2){
+            if (timer > 2)
+            {
                 timer = 0;
-                if(progession < 2) progession++;
+                if (progession < 2) progession++;
             }
             yield return new WaitForEndOfFrame();
         }
@@ -745,21 +763,24 @@ public class PlayerController : MonoBehaviour
         }
         state = states.idle;
     }
-    IEnumerator SpitSupplement(){
+    IEnumerator SpitSupplement()
+    {
         rigidbody.velocity = new Vector3(rigidbody.velocity.x, 10, rigidbody.velocity.z);
         int charge = 1;
         float timer = 0;
         Debug.Log("doin something");
-        while(charge < 3 && playerInput.Player.Attack2.IsPressed() && !IsGrounded()){
+        while (charge < 3 && playerInput.Player.Attack2.IsPressed() && !IsGrounded())
+        {
             timer += Time.deltaTime;
-            if(timer > 1){
+            if (timer > 1)
+            {
                 charge++;
             }
             yield return new WaitForEndOfFrame();
         }
         for (int i = 0; i < charge; i++)
         {
-            GameObject projectile = Instantiate(projectiles[0],transform.position + new Vector3(0,UnityEngine.Random.Range(-1,1f),0) + UnityEngine.Random.Range(-1,1f) * Vector3.Cross(transform.forward, Vector3.up),Quaternion.identity);
+            GameObject projectile = Instantiate(projectiles[0], transform.position + new Vector3(0, UnityEngine.Random.Range(-1, 1f), 0) + UnityEngine.Random.Range(-1, 1f) * Vector3.Cross(transform.forward, Vector3.up), Quaternion.identity);
             Projectile info = projectile.AddComponent<Projectile>();
             info.damage = 10;
             info.enemyTag = "Enemy";
@@ -767,8 +788,9 @@ public class PlayerController : MonoBehaviour
         }
         StartCoroutine(flicker("ChargeRelease"));
     }
-    private IEnumerator FreeReignSupplement(){
-        rigidbody.velocity = new(0,10,0);
+    private IEnumerator FreeReignSupplement()
+    {
+        rigidbody.velocity = new(0, 10, 0);
         move = Vector3.zero;
         state = states.attacking;
         yield return new WaitForSeconds(0.3f);
@@ -785,7 +807,7 @@ public class PlayerController : MonoBehaviour
         state = states.idle;
         move = Vector3.zero;
     }
-    
+
 }
 
 
