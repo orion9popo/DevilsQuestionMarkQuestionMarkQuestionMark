@@ -92,7 +92,6 @@ public class EnemyAI : MonoBehaviour
             return;
         }
         animator.SetBool("IsWalking", true);
-        goTo = -Vector3.Cross(transform.position - player.position, transform.up) + transform.position + (player.position - transform.position) * 0.3f;
         transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z));
         if ((transform.position - player.position).magnitude < grabRange && !cooldown)
         {
@@ -107,7 +106,7 @@ public class EnemyAI : MonoBehaviour
         {
             goTo = player.position;
         }
-        rigidbody.MovePosition(transform.position + (transform.position - player.position) * attackSpeed * Time.deltaTime);
+        rigidbody.MovePosition(transform.position + (Vector3.Cross(transform.up, (player.position - transform.position).normalized) * 3 + (player.position - transform.position).normalized) * attackSpeed  * Time.deltaTime);
 
         /*GameObject projectile = Instantiate(bullet, transform.position, Quaternion.identity);
         Rigidbody rb = projectile.GetComponent<Rigidbody>();
@@ -117,23 +116,23 @@ public class EnemyAI : MonoBehaviour
 
     }
     public void SpawnHitbox(){
-        launchAttack(hitbox,transform.forward * 2);
+        launchAttack(hitbox,transform.forward * 2 + transform.position);
     }
     private bool launchAttack(Collider other, Vector3 pos)
     {
         Collider[] cols = Physics.OverlapBox(pos, other.bounds.extents, transform.rotation);
+        //GameObject visual = Instantiate(other.gameObject, pos, transform.rotation);
         bool didHit = false;
         foreach (Collider col in cols)
         {
             if (col.tag == "Player")
-                continue;
-            
-            Debug.Log("got player");
-            HurtBox hurtBox = col.transform.GetComponent<HurtBox>();
-            if (hurtBox != null)
             {
-                hurtBox.TakeDamage(5);
-                didHit = true;
+                HurtBox hurtBox = col.transform.GetComponent<HurtBox>();
+                if (hurtBox != null)
+                {
+                    hurtBox.TakeDamage(5);
+                    didHit = true;
+                }
             }
         }
         return didHit;

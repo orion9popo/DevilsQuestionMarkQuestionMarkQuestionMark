@@ -105,6 +105,7 @@ public class PlayerController : MonoBehaviour
         move *= 0.5f;
         if (timeSinceLastSwing > 1) attackProgression = 0;
         timeSinceLastSwing = 0;
+        rigidbody.velocity = new(0, 10, 0);
         animator.SetInteger("AttackProgression", attackProgression);
         if (attackProgression < 2) attackProgression += 1;
         else
@@ -115,7 +116,7 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(SwordRave3Supplement());
             return;
         }
-        launchAttack(hitboxes[0], transform.position + transform.forward * 2, 10, Vector3.zero);
+        launchAttack(hitboxes[0], transform.position + transform.forward * 2, 10, Vector3.up * 700);
         StartCoroutine(CoolDownCoroutine(0.33f));
     }
     private void Stinger()
@@ -177,6 +178,7 @@ public class PlayerController : MonoBehaviour
         rigidbody.velocity += Vector3.up * 3;
         if (timeSinceLastSwing > 1) attackProgression = 0;
         timeSinceLastSwing = 0;
+        rigidbody.velocity = new(0, 10, 0);
         animator.SetInteger("AttackProgression", attackProgression);
         if (attackProgression < 2) attackProgression += 1;
         else
@@ -301,6 +303,7 @@ public class PlayerController : MonoBehaviour
         timeSinceLastSwing += Time.deltaTime;
         if (isItHighTime && playerInput.Player.Attack1.IsPressed()) highTime += Time.deltaTime;
         if (lockTarget == null) lockTarget = transform;
+        rigidbody.angularVelocity = Vector3.zero;
         targetDirection = (lockTarget.position - transform.position).normalized;
         switch (state)
         {
