@@ -451,11 +451,11 @@ AnimatorStateTransition:
     m_ConditionEvent: Grounded
     m_EventTreshold: 0
   - m_ConditionMode: 1
-    m_ConditionEvent: Attack2
+    m_ConditionEvent: Attack1
     m_EventTreshold: 0
   - m_ConditionMode: 4
     m_ConditionEvent: WishVertical
-    m_EventTreshold: 0.706
+    m_EventTreshold: -0.706
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -7315026954560597132}
   m_Solo: 0
@@ -595,9 +595,6 @@ AnimatorStateTransition:
   - m_ConditionMode: 1
     m_ConditionEvent: Attack2
     m_EventTreshold: 0
-  - m_ConditionMode: 3
-    m_ConditionEvent: WishVertical
-    m_EventTreshold: 0.707
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -8266230241982847244}
   m_Solo: 0
@@ -3561,6 +3558,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: AttackProgression
     m_EventTreshold: 0
+  - m_ConditionMode: 3
+    m_ConditionEvent: WishVertical
+    m_EventTreshold: -0.706
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -1701214397073871817}
   m_Solo: 0
